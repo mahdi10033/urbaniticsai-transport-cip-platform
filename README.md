@@ -1,58 +1,36 @@
-# UrbaniticsAI Transportation CIP Platform MVP v2
+# UrbaniticsAI Transportation CIP Platform MVP v3
 
-This MVP expands the earlier prioritization dashboard into a broader transportation capital planning and infrastructure decision-support prototype.
+This version adds investor-ready and government-ready features to the earlier MVP.
 
-## Platform concept
+## Added in v3
 
-UrbaniticsAI helps cities and counties connect asset inventory, needs assessment, LOS analysis, demand forecasting, strategic alignment, financial planning, implementation scheduling, and CIP prioritization in one decision-support workflow.
+- Map-centered project view
+- Top priority project panel
+- "Why prioritized?" explanations
+- Executive risk indicators
+- Scenario planning engine
+- Safety-first, ADA-first, financial-first, and strategic-alignment-first scenarios
+- Single-year budget scenario
+- 5-year CIP funding simulation
+- Deferred maintenance analysis
+- Executive summary export
 
-## Included modules
+## Core platform modules
 
 1. Executive overview
-2. Needs assessment and asset inventory
-3. LOS and demand forecasting
-4. Strategic alignment with adopted plans
-5. Financial and funding plan
-6. Implementation schedule and milestones
-7. CIP prioritization and budget scenario
-8. Decision justification report
-9. Database-style schema and input requirements
-
-## Typical reporting items included
-
-### Financial and funding plan
-- Capital cost estimates
-- Funding sources
-- Funding gaps
-- Annual operating and maintenance impact
-
-### LOS
-- Current LOS
-- Projected no-build LOS
-- Expected LOS after project implementation
-
-### Implementation schedule
-- Project phases
-- Milestones
-- Target dates
-- Responsible units
-- Status
-
-### Needs assessment and asset inventory
-- Asset type
-- Issue type
-- Condition assessment
-- Demand forecasting
-- Growth context
-
-### Strategic alignment
-- Metropolitan Transportation Plan consistency
-- Long Range Transportation Plan consistency
-- Comprehensive Plan alignment
-- Complete Streets alignment
-- Vision Zero alignment
-- ADA Transition Plan alignment
-- Resilience alignment
+2. Map center
+3. Top priorities
+4. Risk indicators
+5. Scenario planning
+6. Asset inventory and needs assessment
+7. LOS and demand forecasting
+8. Strategic alignment
+9. Financial and funding plan
+10. Implementation schedule
+11. CIP prioritization
+12. Deferred maintenance analysis
+13. Executive export
+14. Data schema
 
 ## Run locally
 
@@ -66,8 +44,12 @@ streamlit run app.py
 ```bash
 git init
 git add .
-git commit -m "Initial UrbaniticsAI Transportation CIP Platform MVP v2"
+git commit -m "UrbaniticsAI Transportation CIP Platform MVP v3"
 git branch -M main
 git remote add origin https://github.com/YOUR-USERNAME/urbaniticsai-transport-cip-platform.git
 git push -u origin main
 ```
+
+## Deployment
+
+Deploy through Streamlit Community Cloud using `app.py` as the main file.

@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
-st.set_page_config(page_title="UrbaniticsAI Transportation CIP Platform MVP v2", layout="wide")
+st.set_page_config(page_title="UrbaniticsAI Transportation CIP Platform MVP v3", layout="wide")
 
 LEVEL_MAP = {"Low": 1, "Medium": 3, "High": 5}
 ALIGN_MAP = {"Weak": 1, "Moderate": 3, "Strong": 5}
@@ -10,7 +10,7 @@ YES_NO_MAP = {"No": 1, "Yes": 5}
 CONDITION_MAP = {"Good": 1, "Fair": 3, "Poor": 5}
 LOS_MAP = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 5}
 
-DEFAULT_WEIGHTS = {
+BASE_WEIGHTS = {
     "safety_risk": 20,
     "ada_accessibility": 15,
     "asset_condition": 12,
@@ -20,6 +20,26 @@ DEFAULT_WEIGHTS = {
     "financial_feasibility": 8,
     "equity_impact": 5,
     "community_concern": 5
+}
+
+SCENARIOS = {
+    "Balanced": BASE_WEIGHTS,
+    "Safety First": {
+        "safety_risk": 35, "ada_accessibility": 12, "asset_condition": 10, "los_performance": 12,
+        "demand_need": 6, "strategic_alignment": 10, "financial_feasibility": 5, "equity_impact": 5, "community_concern": 5
+    },
+    "ADA & Accessibility First": {
+        "safety_risk": 15, "ada_accessibility": 35, "asset_condition": 10, "los_performance": 8,
+        "demand_need": 5, "strategic_alignment": 12, "financial_feasibility": 5, "equity_impact": 5, "community_concern": 5
+    },
+    "Financial Feasibility First": {
+        "safety_risk": 15, "ada_accessibility": 10, "asset_condition": 10, "los_performance": 10,
+        "demand_need": 5, "strategic_alignment": 15, "financial_feasibility": 25, "equity_impact": 5, "community_concern": 5
+    },
+    "Strategic Alignment First": {
+        "safety_risk": 15, "ada_accessibility": 10, "asset_condition": 10, "los_performance": 10,
+        "demand_need": 8, "strategic_alignment": 30, "financial_feasibility": 7, "equity_impact": 5, "community_concern": 5
+    }
 }
 
 def norm(raw):
@@ -104,6 +124,11 @@ def calculate_scores(df, demand, weights):
 
     data["priority_level"] = data["priority_score"].apply(label)
     data["rank"] = data["priority_score"].rank(method="first", ascending=False).astype(int)
+
+    # Deferred maintenance model for demo purposes
+    data["deferred_5yr_cost"] = (data["estimated_capital_cost"] * 1.25).round(0)
+    data["deferred_cost_increase"] = data["deferred_5yr_cost"] - data["estimated_capital_cost"]
+
     return data.sort_values("priority_score", ascending=False)
 
 def budget_scenario(scored, budget):
@@ -112,23 +137,74 @@ def budget_scenario(scored, budget):
     ranked["funding_status"] = ranked["cumulative_cost"].apply(lambda x: "Funded" if x <= budget else "Deferred")
     return ranked
 
+def multiyear_cip(scored, annual_budget, years=5):
+    projects = scored.sort_values("priority_score", ascending=False).copy()
+    rows = []
+    idx = 0
+    for y in range(1, years + 1):
+        remaining = annual_budget
+        while idx < len(projects) and projects.iloc[idx]["estimated_capital_cost"] <= remaining:
+            p = projects.iloc[idx]
+            rows.append({
+                "CIP Year": f"Year {y}",
+                "project_id": p["project_id"],
+                "project_name": p["project_name"],
+                "priority_score": p["priority_score"],
+                "priority_level": p["priority_level"],
+                "estimated_capital_cost": p["estimated_capital_cost"]
+            })
+            remaining -= p["estimated_capital_cost"]
+            idx += 1
+    return pd.DataFrame(rows)
+
+def risk_indicators(scored):
+    return {
+        "ADA Exposure": int((scored["ada_accessibility_concern"] == "Yes").sum()),
+        "LOS Failure Risk": int(scored["projected_los_no_build"].isin(["E", "F"]).sum()),
+        "High Safety Concern": int((scored["safety_risk"] == "High").sum()),
+        "Poor Condition Assets": int((scored["condition"] == "Poor").sum()),
+        "High Community Concern": int((scored["community_concern_level"] == "High").sum())
+    }
+
+def project_why(row):
+    reasons = []
+    if row["safety_risk"] == "High" or row["crash_history_nearby"] == "Yes":
+        reasons.append("high safety or crash exposure")
+    if row["ada_accessibility_concern"] == "Yes":
+        reasons.append("ADA/accessibility concern")
+    if row["projected_los_no_build"] in ["E", "F"]:
+        reasons.append("projected LOS failure risk")
+    if row["strategic_alignment_score"] >= 70:
+        reasons.append("strong alignment with adopted plans")
+    if row["community_concern_level"] == "High":
+        reasons.append("strong agency-recorded community concern")
+    if row["condition"] == "Poor":
+        reasons.append("poor asset condition")
+    return ", ".join(reasons[:4]) if reasons else "balanced need across scoring criteria"
+
 projects, funding, schedule, demand, dictionary = load_tables()
 
-st.title("UrbaniticsAI Transportation CIP Platform MVP v2")
-st.caption("Integrated reporting, asset inventory, needs assessment, LOS, strategic alignment, financial planning, implementation scheduling, and CIP prioritization.")
+st.title("UrbaniticsAI Transportation CIP Platform MVP v3")
+st.caption("Transportation infrastructure decision intelligence for CIP planning, prioritization, funding, LOS, strategic alignment, and implementation.")
 
 with st.sidebar:
+    st.header("Scenario")
+    scenario_name = st.selectbox("Prioritization scenario", list(SCENARIOS.keys()))
+    base_weights = SCENARIOS[scenario_name].copy()
+
     st.header("Scoring Weights")
     weights = {}
-    for key, default in DEFAULT_WEIGHTS.items():
-        weights[key] = st.slider(key.replace("_", " ").title(), 0, 40, default)
+    for key, default in base_weights.items():
+        weights[key] = st.slider(key.replace("_", " ").title(), 0, 45, default)
 
     st.header("Filters")
     district_filter = st.multiselect("District", sorted(projects["district"].unique()))
     asset_filter = st.multiselect("Asset Type", sorted(projects["asset_type"].unique()))
+    priority_filter = st.multiselect("Priority Level", ["Critical", "High", "Medium", "Low"])
 
     st.header("Budget Scenario")
-    budget = st.number_input("Available CIP budget", min_value=0, value=5000000, step=100000)
+    budget = st.number_input("Single-year CIP budget", min_value=0, value=5000000, step=100000)
+    annual_budget = st.number_input("Annual budget for 5-year CIP", min_value=0, value=5000000, step=100000)
 
 filtered_projects = projects.copy()
 if district_filter:
@@ -136,28 +212,42 @@ if district_filter:
 if asset_filter:
     filtered_projects = filtered_projects[filtered_projects["asset_type"].isin(asset_filter)]
 
-scored = calculate_scores(filtered_projects, demand, weights)
+scored_all = calculate_scores(filtered_projects, demand, weights)
+scored = scored_all.copy()
+if priority_filter:
+    scored = scored[scored["priority_level"].isin(priority_filter)]
 
 tabs = st.tabs([
     "Executive Overview",
+    "Map Center",
+    "Top Priorities",
+    "Risk Indicators",
+    "Scenario Planning",
     "Asset Inventory & Needs",
     "LOS & Demand",
     "Strategic Alignment",
     "Financial Plan",
     "Implementation Schedule",
     "CIP Prioritization",
-    "Decision Report",
+    "Deferred Maintenance",
+    "Executive Export",
     "Data Schema"
 ])
 
 with tabs[0]:
     c1, c2, c3, c4, c5, c6 = st.columns(6)
-    c1.metric("Candidate Projects", f"{len(scored):,}")
+    c1.metric("CIP Candidate Projects", f"{len(scored):,}")
     c2.metric("Critical/High", f"{len(scored[scored['priority_level'].isin(['Critical','High'])]):,}")
     c3.metric("Capital Need", f"${scored['estimated_capital_cost'].sum()/1000000:.1f}M")
     c4.metric("Annual O&M Impact", f"${scored['estimated_annual_om_cost'].sum()/1000000:.2f}M")
     c5.metric("Funding Gap", f"${scored['funding_gap'].sum()/1000000:.1f}M")
-    c6.metric("Avg Score", f"{scored['priority_score'].mean():.1f}")
+    c6.metric("Average Priority Score", f"{scored['priority_score'].mean():.1f}")
+
+    risk = risk_indicators(scored)
+    st.subheader("Executive Risk Snapshot")
+    rcols = st.columns(5)
+    for col, (label, value) in zip(rcols, risk.items()):
+        col.metric(label, value)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -169,6 +259,66 @@ with tabs[0]:
         st.plotly_chart(fig, use_container_width=True)
 
 with tabs[1]:
+    st.subheader("Map-Centered Project View")
+    map_df = scored.rename(columns={"latitude": "lat", "longitude": "lon"})
+    st.map(map_df[["lat", "lon"]])
+    st.caption("MVP map. Production version should use ArcGIS, Mapbox, or Folium with priority-colored markers and layer controls.")
+    st.dataframe(scored[["rank", "project_id", "project_name", "asset_type", "district", "priority_score", "priority_level", "estimated_capital_cost"]],
+                 use_container_width=True, hide_index=True)
+
+with tabs[2]:
+    st.subheader("Top Priority Projects")
+    top = scored.head(15).copy()
+    top["Why prioritized?"] = top.apply(project_why, axis=1)
+    cols = ["rank", "project_id", "project_name", "asset_type", "district", "priority_score", "priority_level",
+            "estimated_capital_cost", "estimated_annual_om_cost", "Why prioritized?"]
+    st.dataframe(top[cols], use_container_width=True, hide_index=True)
+
+    fig = px.bar(top, x="project_name", y="priority_score", color="priority_level", title="Top Priority Scores")
+    fig.update_layout(xaxis_tickangle=-35)
+    st.plotly_chart(fig, use_container_width=True)
+
+with tabs[3]:
+    st.subheader("Risk Indicators")
+    risk = risk_indicators(scored)
+    risk_df = pd.DataFrame({"Risk Indicator": list(risk.keys()), "Count": list(risk.values())})
+    st.dataframe(risk_df, use_container_width=True, hide_index=True)
+    fig = px.bar(risk_df, x="Risk Indicator", y="Count", title="Infrastructure and Planning Risk Indicators")
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("""
+    These indicators help managers and elected officials quickly understand the scale of risk exposure across ADA,
+    LOS, safety, condition, and community concern dimensions.
+    """)
+
+with tabs[4]:
+    st.subheader("Scenario Planning Engine")
+    st.write(f"Current scenario: **{scenario_name}**")
+
+    scenario_results = []
+    for name, w in SCENARIOS.items():
+        temp = calculate_scores(filtered_projects, demand, w)
+        scenario_results.append({
+            "Scenario": name,
+            "Average Priority Score": round(temp["priority_score"].mean(), 1),
+            "Critical/High Projects": int(temp["priority_level"].isin(["Critical", "High"]).sum()),
+            "Top Project": temp.iloc[0]["project_name"],
+            "Top Project Score": temp.iloc[0]["priority_score"]
+        })
+    scenario_df = pd.DataFrame(scenario_results)
+    st.dataframe(scenario_df, use_container_width=True, hide_index=True)
+
+    top_compare = []
+    for name, w in SCENARIOS.items():
+        temp = calculate_scores(filtered_projects, demand, w).head(10)
+        for _, row in temp.iterrows():
+            top_compare.append({"Scenario": name, "Project": row["project_name"], "Score": row["priority_score"]})
+    top_compare_df = pd.DataFrame(top_compare)
+    fig = px.bar(top_compare_df, x="Project", y="Score", color="Scenario", barmode="group", title="Top 10 Project Scores by Scenario")
+    fig.update_layout(xaxis_tickangle=-45)
+    st.plotly_chart(fig, use_container_width=True)
+
+with tabs[5]:
     st.subheader("Needs Assessment and Asset Inventory")
     summary = scored.groupby(["asset_type", "condition"]).agg(
         assets=("asset_id", "count"),
@@ -177,17 +327,13 @@ with tabs[1]:
     ).reset_index()
     summary["avg_priority"] = summary["avg_priority"].round(1)
     st.dataframe(summary, use_container_width=True, hide_index=True)
-
     fig = px.bar(summary, x="asset_type", y="assets", color="condition", title="Condition Assessment by Asset Type")
     st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Inventory Map")
-    st.map(scored.rename(columns={"latitude": "lat", "longitude": "lon"})[["lat", "lon"]])
-
-with tabs[2]:
+with tabs[6]:
     st.subheader("LOS and Demand Forecasting")
     los_cols = ["project_id", "project_name", "asset_type", "district", "current_los", "projected_los_no_build",
-                "expected_los_after_project", "demand_growth_level", "forecast_year", 
+                "expected_los_after_project", "demand_growth_level", "forecast_year",
                 "base_year_volume_or_demand", "forecast_year_volume_or_demand", "demand_forecast_confidence",
                 "los_performance_score", "demand_need_score"]
     st.dataframe(scored[los_cols], use_container_width=True, hide_index=True)
@@ -201,7 +347,7 @@ with tabs[2]:
                          color="priority_level", hover_name="project_name", title="Demand Growth Context")
         st.plotly_chart(fig, use_container_width=True)
 
-with tabs[3]:
+with tabs[7]:
     st.subheader("Strategic Alignment")
     alignment_cols = [
         "mtp_alignment", "lrtp_alignment", "complete_streets_alignment", "vision_zero_alignment",
@@ -215,9 +361,9 @@ with tabs[3]:
     fig.update_layout(xaxis_tickangle=-35)
     st.plotly_chart(fig, use_container_width=True)
 
-with tabs[4]:
+with tabs[8]:
     st.subheader("Financial and Funding Plan")
-    financial_cols = ["project_id", "project_name", "estimated_capital_cost", "estimated_annual_om_cost", 
+    financial_cols = ["project_id", "project_name", "estimated_capital_cost", "estimated_annual_om_cost",
                       "primary_funding_source", "funding_gap", "financial_feasibility_score", "priority_score"]
     st.dataframe(scored[financial_cols], use_container_width=True, hide_index=True)
 
@@ -235,22 +381,20 @@ with tabs[4]:
     st.subheader("Funding Source Reference")
     st.dataframe(funding, use_container_width=True, hide_index=True)
 
-with tabs[5]:
+with tabs[9]:
     st.subheader("Implementation Schedule")
     joined_schedule = schedule.merge(scored[["project_id", "project_name", "priority_score", "priority_level", "cip_phase"]], on="project_id", how="inner")
     st.dataframe(joined_schedule.sort_values(["project_id", "target_date"]), use_container_width=True, hide_index=True)
-
     milestone_counts = joined_schedule.groupby(["milestone", "status"]).size().reset_index(name="count")
     fig = px.bar(milestone_counts, x="milestone", y="count", color="status", title="Milestone Status")
     fig.update_layout(xaxis_tickangle=-35)
     st.plotly_chart(fig, use_container_width=True)
 
-with tabs[6]:
-    st.subheader("CIP Prioritization")
+with tabs[10]:
+    st.subheader("CIP Prioritization and Budget Scenario")
     scenario = budget_scenario(scored, budget)
     funded = scenario[scenario["funding_status"] == "Funded"]
     deferred = scenario[scenario["funding_status"] == "Deferred"]
-
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Available Budget", f"${budget:,.0f}")
     c2.metric("Funded Projects", f"{len(funded):,}")
@@ -261,55 +405,73 @@ with tabs[6]:
                  "estimated_capital_cost", "estimated_annual_om_cost", "funding_gap", "cip_phase", "funding_status"]
     st.dataframe(scenario[rank_cols], use_container_width=True, hide_index=True)
 
+    st.subheader("5-Year CIP Simulation")
+    five_year = multiyear_cip(scored, annual_budget, years=5)
+    if len(five_year) > 0:
+        st.dataframe(five_year, use_container_width=True, hide_index=True)
+        yearly = five_year.groupby("CIP Year").agg(
+            projects=("project_id", "count"),
+            capital_cost=("estimated_capital_cost", "sum")
+        ).reset_index()
+        fig = px.bar(yearly, x="CIP Year", y="capital_cost", title="5-Year Programmed Capital Cost")
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.warning("No projects fit within the annual budget.")
+
     st.download_button("Download CIP ranked list", scenario[rank_cols].to_csv(index=False), "cip_ranked_projects.csv", "text/csv")
 
-with tabs[7]:
-    st.subheader("Decision Justification Report")
-    selected = st.selectbox("Select project", scored["project_name"].tolist())
-    row = scored[scored["project_name"] == selected].iloc[0]
-
-    st.markdown(f"### {row['project_name']}")
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Priority Score", row["priority_score"])
-    c2.metric("Priority Level", row["priority_level"])
-    c3.metric("Capital Cost", f"${row['estimated_capital_cost']:,.0f}")
-    c4.metric("Annual O&M", f"${row['estimated_annual_om_cost']:,.0f}")
-
-    breakdown = pd.DataFrame({
-        "Criterion": [
-            "Safety Risk", "ADA & Accessibility", "Asset Condition", "LOS Performance", "Demand Need",
-            "Strategic Alignment", "Financial Feasibility", "Equity Impact", "Community Concern"
-        ],
-        "Score": [
-            row["safety_risk_score"], row["ada_accessibility_score"], row["asset_condition_score"],
-            row["los_performance_score"], row["demand_need_score"], row["strategic_alignment_score"],
-            row["financial_feasibility_score"], row["equity_impact_score"], row["community_concern_score"]
-        ],
-        "Weight": [
-            weights["safety_risk"], weights["ada_accessibility"], weights["asset_condition"],
-            weights["los_performance"], weights["demand_need"], weights["strategic_alignment"],
-            weights["financial_feasibility"], weights["equity_impact"], weights["community_concern"]
-        ]
-    })
-    breakdown["Weighted Contribution"] = (breakdown["Score"] * breakdown["Weight"] / sum(weights.values())).round(1)
-    st.dataframe(breakdown, use_container_width=True, hide_index=True)
-
-    fig = px.bar(breakdown, x="Criterion", y="Weighted Contribution", title="Priority Score Contribution")
-    fig.update_layout(xaxis_tickangle=-35)
+with tabs[11]:
+    st.subheader("Deferred Maintenance Analysis")
+    cols = ["rank", "project_id", "project_name", "priority_score", "priority_level", "estimated_capital_cost", "deferred_5yr_cost", "deferred_cost_increase"]
+    st.dataframe(scored[cols], use_container_width=True, hide_index=True)
+    c1, c2 = st.columns(2)
+    c1.metric("Current Capital Need", f"${scored['estimated_capital_cost'].sum()/1000000:.1f}M")
+    c2.metric("Estimated 5-Year Deferred Cost", f"${scored['deferred_5yr_cost'].sum()/1000000:.1f}M")
+    fig = px.scatter(scored, x="estimated_capital_cost", y="deferred_cost_increase",
+                     color="priority_level", hover_name="project_name", title="Estimated Cost of Deferral")
     st.plotly_chart(fig, use_container_width=True)
 
-    st.markdown("#### Planning Justification")
-    st.write(
-        "This project is ranked based on agency-defined priorities across infrastructure condition, safety, ADA/accessibility, "
-        "LOS and demand needs, strategic alignment with adopted plans, financial feasibility, equity impact, and structured "
-        "community concern. Strategic alignment includes MTP/LRTP consistency, comprehensive plan alignment, Complete Streets, "
-        "Vision Zero, ADA transition planning, and resilience goals."
-    )
+with tabs[12]:
+    st.subheader("Executive Summary Export")
+    top = scored.head(10).copy()
+    top["Why prioritized?"] = top.apply(project_why, axis=1)
 
-with tabs[8]:
+    report = f"""UrbaniticsAI Transportation CIP Platform - Executive Summary
+
+Scenario: {scenario_name}
+
+Key Metrics
+- CIP Candidate Projects: {len(scored)}
+- Critical/High Projects: {len(scored[scored['priority_level'].isin(['Critical','High'])])}
+- Total Capital Need: ${scored['estimated_capital_cost'].sum():,.0f}
+- Annual O&M Impact: ${scored['estimated_annual_om_cost'].sum():,.0f}
+- Funding Gap: ${scored['funding_gap'].sum():,.0f}
+- Average Priority Score: {scored['priority_score'].mean():.1f}
+
+Risk Snapshot
+- ADA Exposure: {risk_indicators(scored)['ADA Exposure']}
+- LOS Failure Risk: {risk_indicators(scored)['LOS Failure Risk']}
+- High Safety Concern: {risk_indicators(scored)['High Safety Concern']}
+- Poor Condition Assets: {risk_indicators(scored)['Poor Condition Assets']}
+- High Community Concern: {risk_indicators(scored)['High Community Concern']}
+
+Top Priority Projects
+"""
+    for _, r in top.iterrows():
+        report += f"- {int(r['rank'])}. {r['project_name']} | Score: {r['priority_score']} | Cost: ${r['estimated_capital_cost']:,.0f} | Why: {r['Why prioritized?']}\n"
+
+    report += """
+
+Planning Interpretation
+The platform integrates asset condition, LOS and demand forecasting, strategic plan alignment, financial and funding considerations, implementation scheduling, equity, and structured community concern into one defensible CIP prioritization workflow.
+"""
+
+    st.text_area("Executive summary text", report, height=500)
+    st.download_button("Download executive summary", report, "urbaniticsai_executive_summary.txt", "text/plain")
+
+with tabs[13]:
     st.subheader("Database-Style Schema and Input Requirements")
     st.dataframe(dictionary, use_container_width=True, hide_index=True)
-
     st.markdown("""
     **Core tables in this MVP**
     - `projects_assets.csv`: main asset/project inventory and planning fields

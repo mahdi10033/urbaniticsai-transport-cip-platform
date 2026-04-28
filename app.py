@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
-st.set_page_config(page_title="UrbaniticsAI Transportation CIP Platform MVP v3", layout="wide")
+st.set_page_config(page_title="UrbaniticsAI Transportation CIP Platform MVP v4", layout="wide")
 
 LEVEL_MAP = {"Low": 1, "Medium": 3, "High": 5}
 ALIGN_MAP = {"Weak": 1, "Moderate": 3, "Strong": 5}
@@ -45,13 +45,91 @@ SCENARIOS = {
 def norm(raw):
     return (raw - 1) / 4 * 100
 
+REQUIRED_PROJECT_COLUMNS = [
+    "project_id", "asset_id", "project_name", "asset_type", "issue_type", "district", "corridor_or_location",
+    "latitude", "longitude", "condition", "safety_risk", "ada_accessibility_concern", "equity_priority_area",
+    "community_concern_level", "citizen_complaints_count", "near_school", "near_transit", "crash_history_nearby",
+    "current_los", "projected_los_no_build", "expected_los_after_project", "demand_growth_level",
+    "estimated_capital_cost", "estimated_annual_om_cost", "funding_gap", "primary_funding_source",
+    "mtp_alignment", "lrtp_alignment", "complete_streets_alignment", "vision_zero_alignment",
+    "ada_transition_plan_alignment", "resilience_alignment", "comp_plan_alignment", "project_status",
+    "cip_phase", "report_date", "notes"
+]
+PROJECT_DEFAULTS = {
+    "asset_id": "", "project_name": "Unnamed Project", "asset_type": "Roadway", "issue_type": "", "district": "Unassigned",
+    "corridor_or_location": "", "latitude": 29.95, "longitude": -81.32, "condition": "Fair", "safety_risk": "Medium",
+    "ada_accessibility_concern": "No", "equity_priority_area": "No", "community_concern_level": "Low",
+    "citizen_complaints_count": 0, "near_school": "No", "near_transit": "No", "crash_history_nearby": "No",
+    "current_los": "C", "projected_los_no_build": "D", "expected_los_after_project": "C", "demand_growth_level": "Medium",
+    "estimated_capital_cost": 0, "estimated_annual_om_cost": 0, "funding_gap": 0, "primary_funding_source": "Unfunded",
+    "mtp_alignment": "Moderate", "lrtp_alignment": "Moderate", "complete_streets_alignment": "Moderate",
+    "vision_zero_alignment": "Moderate", "ada_transition_plan_alignment": "Moderate", "resilience_alignment": "Moderate",
+    "comp_plan_alignment": "Moderate", "project_status": "Candidate", "cip_phase": "Short-term 1-3 years",
+    "report_date": "", "notes": ""
+}
+DEMAND_COLUMNS = ["project_id", "base_year_volume_or_demand", "forecast_year_volume_or_demand", "forecast_year", "growth_context", "demand_forecast_confidence"]
+SCHEDULE_COLUMNS = ["project_id", "milestone", "target_date", "status", "responsible_unit"]
+FUNDING_COLUMNS = ["funding_source_id", "funding_source", "eligible_assets", "typical_match_requirement", "notes"]
+
+def ensure_columns(df, columns, defaults=None):
+    defaults = defaults or {}
+    df = df.copy()
+    for col in columns:
+        if col not in df.columns:
+            df[col] = defaults.get(col, "")
+    return df[columns]
+
+def clean_uploaded_table(df):
+    df = df.dropna(how="all").copy()
+    df.columns = [str(c).strip() for c in df.columns]
+    return df
+
 @st.cache_data
-def load_tables():
+def load_default_tables():
     projects = pd.read_csv("projects_assets.csv")
     funding = pd.read_csv("funding_sources.csv")
     schedule = pd.read_csv("implementation_schedule.csv")
     demand = pd.read_csv("demand_forecasts.csv")
     dictionary = pd.read_csv("data_dictionary.csv")
+    return projects, funding, schedule, demand, dictionary
+
+def load_uploaded_excel(uploaded_file, default_funding, default_schedule, default_demand, dictionary):
+    workbook = pd.ExcelFile(uploaded_file)
+    sheets = {name.lower(): name for name in workbook.sheet_names}
+    if "projects_assets" not in sheets:
+        st.error("The uploaded workbook must include a sheet named Projects_Assets.")
+        return None
+
+    projects = clean_uploaded_table(pd.read_excel(workbook, sheet_name=sheets["projects_assets"]))
+    projects = ensure_columns(projects, REQUIRED_PROJECT_COLUMNS, PROJECT_DEFAULTS)
+    projects = projects[projects["project_id"].notna() & (projects["project_id"].astype(str).str.strip() != "")]
+
+    if "demand_forecasts" in sheets:
+        demand = ensure_columns(clean_uploaded_table(pd.read_excel(workbook, sheet_name=sheets["demand_forecasts"])), DEMAND_COLUMNS)
+    else:
+        demand = default_demand[default_demand["project_id"].isin(projects["project_id"])].copy()
+        if demand.empty:
+            demand = pd.DataFrame({
+                "project_id": projects["project_id"],
+                "base_year_volume_or_demand": 0,
+                "forecast_year_volume_or_demand": 0,
+                "forecast_year": 2035,
+                "growth_context": "Unknown",
+                "demand_forecast_confidence": "Medium"
+            })
+
+    if "implementation_schedule" in sheets:
+        schedule = ensure_columns(clean_uploaded_table(pd.read_excel(workbook, sheet_name=sheets["implementation_schedule"])), SCHEDULE_COLUMNS)
+    else:
+        schedule = default_schedule[default_schedule["project_id"].isin(projects["project_id"])].copy()
+        if schedule.empty:
+            schedule = pd.DataFrame(columns=SCHEDULE_COLUMNS)
+
+    if "funding_sources" in sheets:
+        funding = ensure_columns(clean_uploaded_table(pd.read_excel(workbook, sheet_name=sheets["funding_sources"])), FUNDING_COLUMNS)
+    else:
+        funding = default_funding.copy()
+
     return projects, funding, schedule, demand, dictionary
 
 def calculate_scores(df, demand, weights):
@@ -182,12 +260,36 @@ def project_why(row):
         reasons.append("poor asset condition")
     return ", ".join(reasons[:4]) if reasons else "balanced need across scoring criteria"
 
-projects, funding, schedule, demand, dictionary = load_tables()
+default_projects, default_funding, default_schedule, default_demand, dictionary = load_default_tables()
+projects, funding, schedule, demand = default_projects, default_funding, default_schedule, default_demand
 
-st.title("UrbaniticsAI Transportation CIP Platform MVP v3")
+st.title("UrbaniticsAI Transportation CIP Platform MVP v4")
 st.caption("Transportation infrastructure decision intelligence for CIP planning, prioritization, funding, LOS, strategic alignment, and implementation.")
 
 with st.sidebar:
+    st.header("Data Upload")
+    uploaded_excel = st.file_uploader("Upload CIP Excel template", type=["xlsx"])
+    try:
+        with open("urbaniticsai_cip_data_intake_template.xlsx", "rb") as template_file:
+            st.download_button(
+                "Download blank Excel template",
+                data=template_file,
+                file_name="urbaniticsai_cip_data_intake_template.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+    except FileNotFoundError:
+        st.caption("Template file is not available in this deployment.")
+
+    if uploaded_excel is not None:
+        uploaded_tables = load_uploaded_excel(uploaded_excel, default_funding, default_schedule, default_demand, dictionary)
+        if uploaded_tables is not None:
+            projects, funding, schedule, demand, dictionary = uploaded_tables
+            st.success(f"Loaded {len(projects)} projects from uploaded workbook.")
+        else:
+            projects, funding, schedule, demand = default_projects, default_funding, default_schedule, default_demand
+    else:
+        st.info("Using sample data. Upload the Excel template to analyze agency data.")
+
     st.header("Scenario")
     scenario_name = st.selectbox("Prioritization scenario", list(SCENARIOS.keys()))
     base_weights = SCENARIOS[scenario_name].copy()
@@ -384,11 +486,14 @@ with tabs[8]:
 with tabs[9]:
     st.subheader("Implementation Schedule")
     joined_schedule = schedule.merge(scored[["project_id", "project_name", "priority_score", "priority_level", "cip_phase"]], on="project_id", how="inner")
-    st.dataframe(joined_schedule.sort_values(["project_id", "target_date"]), use_container_width=True, hide_index=True)
-    milestone_counts = joined_schedule.groupby(["milestone", "status"]).size().reset_index(name="count")
-    fig = px.bar(milestone_counts, x="milestone", y="count", color="status", title="Milestone Status")
-    fig.update_layout(xaxis_tickangle=-35)
-    st.plotly_chart(fig, use_container_width=True)
+    if joined_schedule.empty:
+        st.info("No implementation schedule records are available for the selected projects.")
+    else:
+        st.dataframe(joined_schedule.sort_values(["project_id", "target_date"]), use_container_width=True, hide_index=True)
+        milestone_counts = joined_schedule.groupby(["milestone", "status"]).size().reset_index(name="count")
+        fig = px.bar(milestone_counts, x="milestone", y="count", color="status", title="Milestone Status")
+        fig.update_layout(xaxis_tickangle=-35)
+        st.plotly_chart(fig, use_container_width=True)
 
 with tabs[10]:
     st.subheader("CIP Prioritization and Budget Scenario")

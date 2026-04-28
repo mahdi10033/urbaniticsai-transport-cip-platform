@@ -1,4 +1,4 @@
-# UrbaniticsAI Transportation CIP Platform MVP v3
+# UrbaniticsAI Transportation CIP Platform MVP v4
 
 This version adds investor-ready and government-ready features to the earlier MVP.
 
@@ -44,7 +44,7 @@ streamlit run app.py
 ```bash
 git init
 git add .
-git commit -m "UrbaniticsAI Transportation CIP Platform MVP v3"
+git commit -m "UrbaniticsAI Transportation CIP Platform MVP v4"
 git branch -M main
 git remote add origin https://github.com/YOUR-USERNAME/urbaniticsai-transport-cip-platform.git
 git push -u origin main
@@ -53,3 +53,18 @@ git push -u origin main
 ## Deployment
 
 Deploy through Streamlit Community Cloud using `app.py` as the main file.
+
+
+## Added in v4
+
+- Excel upload button in the Streamlit sidebar
+- Downloadable Excel data intake template
+- Support for agency-provided `Projects_Assets`, `Demand_Forecasts`, `Implementation_Schedule`, and `Funding_Sources` sheets
+- Fallback defaults for optional sheets and missing optional columns
+
+## Excel upload workflow
+
+1. Download `urbaniticsai_cip_data_intake_template.xlsx`.
+2. Fill the `Projects_Assets` sheet.
+3. Optionally fill `Demand_Forecasts`, `Implementation_Schedule`, and `Funding_Sources`.
+4. Upload the completed workbook in the app sidebar.

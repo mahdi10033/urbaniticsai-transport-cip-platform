@@ -1,0 +1,7 @@
+funding_source_id,funding_source,eligible_assets,typical_match_requirement,notes
+FUND-001,Local CIP,All,N/A,Local capital budget allocation.
+FUND-002,MPO/TPO Funds,"Roadway, Bike Lane, Sidewalk, Transit Stop",Varies,Regional transportation funding process.
+FUND-003,Federal Grant,"Safety, ADA, multimodal, resilience",Often 20%,Grant competitiveness depends on plan alignment and benefit-cost narrative.
+FUND-004,State Grant,"Roadway, safety, bridge, multimodal",Varies,State program dependent.
+FUND-005,Impact Fees,Growth-related capacity projects,N/A,Must connect to growth and demand impacts.
+FUND-006,Sales Tax,Approved transportation infrastructure categories,N/A,Local voter or policy dependent.

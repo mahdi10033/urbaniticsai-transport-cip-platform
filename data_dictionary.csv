@@ -1,0 +1,11 @@
+table,field,description
+projects_assets.csv,project_id,Unique CIP project identifier.
+projects_assets.csv,current_los,Existing level of service or performance grade.
+projects_assets.csv,projected_los_no_build,Expected future LOS without the project.
+projects_assets.csv,expected_los_after_project,Expected LOS after project implementation.
+projects_assets.csv,estimated_capital_cost,Planning-level capital cost estimate.
+projects_assets.csv,estimated_annual_om_cost,Estimated annual maintenance/operating impact after implementation.
+projects_assets.csv,mtp_alignment,Consistency with Metropolitan Transportation Plan.
+projects_assets.csv,lrtp_alignment,Consistency with Long Range Transportation Plan.
+implementation_schedule.csv,milestone,Project implementation milestone.
+demand_forecasts.csv,forecast_year_volume_or_demand,Forecasted demand input for needs assessment.

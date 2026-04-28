@@ -1,0 +1,351 @@
+project_id,milestone,target_date,status,responsible_unit
+CIP-0001,Planning Start,2026-07-11,Not Started,Capital Projects
+CIP-0001,Concept Approval,2026-10-04,Complete,Engineering
+CIP-0001,Design Start,2026-12-28,Not Started,Engineering
+CIP-0001,Design Complete,2027-03-23,Not Started,Capital Projects
+CIP-0001,ROW/Permitting,2027-06-16,Complete,Consultant
+CIP-0001,Construction Start,2027-09-09,Complete,Capital Projects
+CIP-0001,Substantial Completion,2027-12-03,Complete,Capital Projects
+CIP-0002,Planning Start,2027-08-03,At Risk,Capital Projects
+CIP-0002,Concept Approval,2027-11-11,In Progress,Capital Projects
+CIP-0002,Design Start,2028-02-19,At Risk,Capital Projects
+CIP-0002,Design Complete,2028-05-29,In Progress,Transportation Planning
+CIP-0002,ROW/Permitting,2028-09-06,In Progress,Consultant
+CIP-0002,Construction Start,2028-12-15,Complete,Consultant
+CIP-0002,Substantial Completion,2029-03-25,At Risk,Public Works
+CIP-0003,Planning Start,2028-09-19,Not Started,Transportation Planning
+CIP-0003,Concept Approval,2028-12-13,Not Started,Transportation Planning
+CIP-0003,Design Start,2029-03-08,At Risk,Consultant
+CIP-0003,Design Complete,2029-06-01,Complete,Capital Projects
+CIP-0003,ROW/Permitting,2029-08-25,Complete,Capital Projects
+CIP-0003,Construction Start,2029-11-18,Not Started,Capital Projects
+CIP-0003,Substantial Completion,2030-02-11,At Risk,Consultant
+CIP-0004,Planning Start,2027-05-13,At Risk,Public Works
+CIP-0004,Concept Approval,2027-09-25,At Risk,Engineering
+CIP-0004,Design Start,2028-02-07,Not Started,Capital Projects
+CIP-0004,Design Complete,2028-06-21,Complete,Consultant
+CIP-0004,ROW/Permitting,2028-11-03,Complete,Transportation Planning
+CIP-0004,Construction Start,2029-03-18,In Progress,Consultant
+CIP-0004,Substantial Completion,2029-07-31,Complete,Engineering
+CIP-0005,Planning Start,2028-10-05,Complete,Consultant
+CIP-0005,Concept Approval,2029-02-02,At Risk,Consultant
+CIP-0005,Design Start,2029-06-02,In Progress,Public Works
+CIP-0005,Design Complete,2029-09-30,Not Started,Consultant
+CIP-0005,ROW/Permitting,2030-01-28,Complete,Consultant
+CIP-0005,Construction Start,2030-05-28,In Progress,Consultant
+CIP-0005,Substantial Completion,2030-09-25,In Progress,Engineering
+CIP-0006,Planning Start,2027-01-27,In Progress,Public Works
+CIP-0006,Concept Approval,2027-06-22,At Risk,Public Works
+CIP-0006,Design Start,2027-11-15,Not Started,Engineering
+CIP-0006,Design Complete,2028-04-09,At Risk,Engineering
+CIP-0006,ROW/Permitting,2028-09-02,At Risk,Transportation Planning
+CIP-0006,Construction Start,2029-01-26,At Risk,Public Works
+CIP-0006,Substantial Completion,2029-06-21,Complete,Capital Projects
+CIP-0007,Planning Start,2026-09-10,Complete,Consultant
+CIP-0007,Concept Approval,2026-12-25,Complete,Capital Projects
+CIP-0007,Design Start,2027-04-10,Not Started,Engineering
+CIP-0007,Design Complete,2027-07-25,At Risk,Engineering
+CIP-0007,ROW/Permitting,2027-11-08,At Risk,Transportation Planning
+CIP-0007,Construction Start,2028-02-22,At Risk,Capital Projects
+CIP-0007,Substantial Completion,2028-06-07,In Progress,Consultant
+CIP-0008,Planning Start,2026-10-28,In Progress,Engineering
+CIP-0008,Concept Approval,2026-12-27,At Risk,Consultant
+CIP-0008,Design Start,2027-02-25,In Progress,Consultant
+CIP-0008,Design Complete,2027-04-26,Complete,Consultant
+CIP-0008,ROW/Permitting,2027-06-25,Complete,Capital Projects
+CIP-0008,Construction Start,2027-08-24,Complete,Transportation Planning
+CIP-0008,Substantial Completion,2027-10-23,In Progress,Transportation Planning
+CIP-0009,Planning Start,2028-01-02,Not Started,Consultant
+CIP-0009,Concept Approval,2028-04-04,In Progress,Engineering
+CIP-0009,Design Start,2028-07-06,Complete,Engineering
+CIP-0009,Design Complete,2028-10-07,Complete,Public Works
+CIP-0009,ROW/Permitting,2029-01-08,Complete,Capital Projects
+CIP-0009,Construction Start,2029-04-11,Not Started,Consultant
+CIP-0009,Substantial Completion,2029-07-13,At Risk,Transportation Planning
+CIP-0010,Planning Start,2026-12-20,At Risk,Engineering
+CIP-0010,Concept Approval,2027-03-06,Complete,Transportation Planning
+CIP-0010,Design Start,2027-05-21,At Risk,Capital Projects
+CIP-0010,Design Complete,2027-08-05,Complete,Transportation Planning
+CIP-0010,ROW/Permitting,2027-10-20,Complete,Capital Projects
+CIP-0010,Construction Start,2028-01-04,At Risk,Consultant
+CIP-0010,Substantial Completion,2028-03-20,Complete,Engineering
+CIP-0011,Planning Start,2027-01-27,In Progress,Consultant
+CIP-0011,Concept Approval,2027-05-16,In Progress,Consultant
+CIP-0011,Design Start,2027-09-02,Complete,Transportation Planning
+CIP-0011,Design Complete,2027-12-20,In Progress,Engineering
+CIP-0011,ROW/Permitting,2028-04-07,Not Started,Transportation Planning
+CIP-0011,Construction Start,2028-07-25,At Risk,Capital Projects
+CIP-0011,Substantial Completion,2028-11-11,At Risk,Consultant
+CIP-0012,Planning Start,2027-07-26,Not Started,Transportation Planning
+CIP-0012,Concept Approval,2027-11-26,At Risk,Capital Projects
+CIP-0012,Design Start,2028-03-28,At Risk,Capital Projects
+CIP-0012,Design Complete,2028-07-29,At Risk,Public Works
+CIP-0012,ROW/Permitting,2028-11-29,Not Started,Capital Projects
+CIP-0012,Construction Start,2029-04-01,At Risk,Capital Projects
+CIP-0012,Substantial Completion,2029-08-02,In Progress,Consultant
+CIP-0013,Planning Start,2028-07-06,In Progress,Public Works
+CIP-0013,Concept Approval,2028-09-05,At Risk,Consultant
+CIP-0013,Design Start,2028-11-05,Not Started,Engineering
+CIP-0013,Design Complete,2029-01-05,Complete,Capital Projects
+CIP-0013,ROW/Permitting,2029-03-07,At Risk,Transportation Planning
+CIP-0013,Construction Start,2029-05-07,Not Started,Public Works
+CIP-0013,Substantial Completion,2029-07-07,Not Started,Consultant
+CIP-0014,Planning Start,2028-09-11,Not Started,Capital Projects
+CIP-0014,Concept Approval,2028-11-11,Not Started,Public Works
+CIP-0014,Design Start,2029-01-11,At Risk,Transportation Planning
+CIP-0014,Design Complete,2029-03-13,In Progress,Engineering
+CIP-0014,ROW/Permitting,2029-05-13,At Risk,Transportation Planning
+CIP-0014,Construction Start,2029-07-13,At Risk,Consultant
+CIP-0014,Substantial Completion,2029-09-12,In Progress,Capital Projects
+CIP-0015,Planning Start,2028-09-10,In Progress,Engineering
+CIP-0015,Concept Approval,2028-11-15,Complete,Public Works
+CIP-0015,Design Start,2029-01-20,Not Started,Public Works
+CIP-0015,Design Complete,2029-03-27,Complete,Consultant
+CIP-0015,ROW/Permitting,2029-06-01,Complete,Transportation Planning
+CIP-0015,Construction Start,2029-08-06,Complete,Capital Projects
+CIP-0015,Substantial Completion,2029-10-11,Complete,Engineering
+CIP-0016,Planning Start,2027-12-18,At Risk,Transportation Planning
+CIP-0016,Concept Approval,2028-04-06,Complete,Engineering
+CIP-0016,Design Start,2028-07-25,In Progress,Capital Projects
+CIP-0016,Design Complete,2028-11-12,At Risk,Consultant
+CIP-0016,ROW/Permitting,2029-03-02,Complete,Engineering
+CIP-0016,Construction Start,2029-06-20,In Progress,Public Works
+CIP-0016,Substantial Completion,2029-10-08,Not Started,Public Works
+CIP-0017,Planning Start,2027-11-28,Complete,Capital Projects
+CIP-0017,Concept Approval,2028-04-19,At Risk,Consultant
+CIP-0017,Design Start,2028-09-09,In Progress,Engineering
+CIP-0017,Design Complete,2029-01-30,Complete,Public Works
+CIP-0017,ROW/Permitting,2029-06-22,At Risk,Consultant
+CIP-0017,Construction Start,2029-11-12,Not Started,Engineering
+CIP-0017,Substantial Completion,2030-04-04,Not Started,Consultant
+CIP-0018,Planning Start,2026-08-05,Complete,Transportation Planning
+CIP-0018,Concept Approval,2026-11-25,Complete,Public Works
+CIP-0018,Design Start,2027-03-17,At Risk,Engineering
+CIP-0018,Design Complete,2027-07-07,In Progress,Public Works
+CIP-0018,ROW/Permitting,2027-10-27,At Risk,Capital Projects
+CIP-0018,Construction Start,2028-02-16,At Risk,Public Works
+CIP-0018,Substantial Completion,2028-06-07,In Progress,Transportation Planning
+CIP-0019,Planning Start,2026-11-28,Not Started,Transportation Planning
+CIP-0019,Concept Approval,2027-03-23,In Progress,Transportation Planning
+CIP-0019,Design Start,2027-07-16,At Risk,Public Works
+CIP-0019,Design Complete,2027-11-08,Not Started,Consultant
+CIP-0019,ROW/Permitting,2028-03-02,In Progress,Capital Projects
+CIP-0019,Construction Start,2028-06-25,In Progress,Engineering
+CIP-0019,Substantial Completion,2028-10-18,In Progress,Consultant
+CIP-0020,Planning Start,2028-10-02,In Progress,Public Works
+CIP-0020,Concept Approval,2028-12-21,Not Started,Capital Projects
+CIP-0020,Design Start,2029-03-11,Not Started,Public Works
+CIP-0020,Design Complete,2029-05-30,Not Started,Transportation Planning
+CIP-0020,ROW/Permitting,2029-08-18,At Risk,Public Works
+CIP-0020,Construction Start,2029-11-06,Complete,Capital Projects
+CIP-0020,Substantial Completion,2030-01-25,At Risk,Public Works
+CIP-0021,Planning Start,2026-07-25,In Progress,Transportation Planning
+CIP-0021,Concept Approval,2026-12-21,In Progress,Capital Projects
+CIP-0021,Design Start,2027-05-19,Complete,Public Works
+CIP-0021,Design Complete,2027-10-15,Complete,Consultant
+CIP-0021,ROW/Permitting,2028-03-12,In Progress,Engineering
+CIP-0021,Construction Start,2028-08-08,Complete,Engineering
+CIP-0021,Substantial Completion,2029-01-04,In Progress,Public Works
+CIP-0022,Planning Start,2028-08-23,In Progress,Capital Projects
+CIP-0022,Concept Approval,2029-01-15,Not Started,Engineering
+CIP-0022,Design Start,2029-06-09,At Risk,Public Works
+CIP-0022,Design Complete,2029-11-01,Complete,Public Works
+CIP-0022,ROW/Permitting,2030-03-26,Not Started,Public Works
+CIP-0022,Construction Start,2030-08-18,At Risk,Public Works
+CIP-0022,Substantial Completion,2031-01-10,In Progress,Capital Projects
+CIP-0023,Planning Start,2027-05-04,At Risk,Transportation Planning
+CIP-0023,Concept Approval,2027-09-27,Not Started,Engineering
+CIP-0023,Design Start,2028-02-20,Not Started,Public Works
+CIP-0023,Design Complete,2028-07-15,Not Started,Engineering
+CIP-0023,ROW/Permitting,2028-12-08,At Risk,Engineering
+CIP-0023,Construction Start,2029-05-03,Not Started,Capital Projects
+CIP-0023,Substantial Completion,2029-09-26,Not Started,Public Works
+CIP-0024,Planning Start,2027-10-06,Complete,Consultant
+CIP-0024,Concept Approval,2028-01-09,Not Started,Public Works
+CIP-0024,Design Start,2028-04-13,In Progress,Capital Projects
+CIP-0024,Design Complete,2028-07-17,Complete,Public Works
+CIP-0024,ROW/Permitting,2028-10-20,Complete,Transportation Planning
+CIP-0024,Construction Start,2029-01-23,Not Started,Transportation Planning
+CIP-0024,Substantial Completion,2029-04-28,Complete,Public Works
+CIP-0025,Planning Start,2026-10-30,Complete,Transportation Planning
+CIP-0025,Concept Approval,2027-03-23,In Progress,Engineering
+CIP-0025,Design Start,2027-08-14,Complete,Capital Projects
+CIP-0025,Design Complete,2028-01-05,At Risk,Public Works
+CIP-0025,ROW/Permitting,2028-05-28,Complete,Engineering
+CIP-0025,Construction Start,2028-10-19,In Progress,Transportation Planning
+CIP-0025,Substantial Completion,2029-03-12,Complete,Transportation Planning
+CIP-0026,Planning Start,2028-06-07,At Risk,Transportation Planning
+CIP-0026,Concept Approval,2028-10-16,Not Started,Public Works
+CIP-0026,Design Start,2029-02-24,At Risk,Capital Projects
+CIP-0026,Design Complete,2029-07-05,Not Started,Transportation Planning
+CIP-0026,ROW/Permitting,2029-11-13,Not Started,Consultant
+CIP-0026,Construction Start,2030-03-24,Not Started,Capital Projects
+CIP-0026,Substantial Completion,2030-08-02,In Progress,Capital Projects
+CIP-0027,Planning Start,2028-01-09,Not Started,Engineering
+CIP-0027,Concept Approval,2028-04-23,In Progress,Engineering
+CIP-0027,Design Start,2028-08-06,In Progress,Transportation Planning
+CIP-0027,Design Complete,2028-11-19,Complete,Transportation Planning
+CIP-0027,ROW/Permitting,2029-03-04,At Risk,Engineering
+CIP-0027,Construction Start,2029-06-17,In Progress,Engineering
+CIP-0027,Substantial Completion,2029-09-30,Not Started,Transportation Planning
+CIP-0028,Planning Start,2027-01-27,In Progress,Capital Projects
+CIP-0028,Concept Approval,2027-04-11,Complete,Consultant
+CIP-0028,Design Start,2027-06-24,Not Started,Engineering
+CIP-0028,Design Complete,2027-09-06,At Risk,Public Works
+CIP-0028,ROW/Permitting,2027-11-19,In Progress,Consultant
+CIP-0028,Construction Start,2028-02-01,Not Started,Consultant
+CIP-0028,Substantial Completion,2028-04-15,Complete,Engineering
+CIP-0029,Planning Start,2026-12-16,At Risk,Consultant
+CIP-0029,Concept Approval,2027-03-22,In Progress,Public Works
+CIP-0029,Design Start,2027-06-26,In Progress,Consultant
+CIP-0029,Design Complete,2027-09-30,In Progress,Transportation Planning
+CIP-0029,ROW/Permitting,2028-01-04,Not Started,Transportation Planning
+CIP-0029,Construction Start,2028-04-09,Not Started,Capital Projects
+CIP-0029,Substantial Completion,2028-07-14,In Progress,Public Works
+CIP-0030,Planning Start,2026-08-25,In Progress,Engineering
+CIP-0030,Concept Approval,2026-11-14,Not Started,Capital Projects
+CIP-0030,Design Start,2027-02-03,At Risk,Consultant
+CIP-0030,Design Complete,2027-04-25,Not Started,Engineering
+CIP-0030,ROW/Permitting,2027-07-15,Not Started,Transportation Planning
+CIP-0030,Construction Start,2027-10-04,In Progress,Public Works
+CIP-0030,Substantial Completion,2027-12-24,In Progress,Consultant
+CIP-0031,Planning Start,2028-07-29,Not Started,Public Works
+CIP-0031,Concept Approval,2028-12-01,Not Started,Consultant
+CIP-0031,Design Start,2029-04-05,Complete,Transportation Planning
+CIP-0031,Design Complete,2029-08-08,Not Started,Public Works
+CIP-0031,ROW/Permitting,2029-12-11,In Progress,Engineering
+CIP-0031,Construction Start,2030-04-15,Complete,Transportation Planning
+CIP-0031,Substantial Completion,2030-08-18,At Risk,Consultant
+CIP-0032,Planning Start,2026-12-01,Complete,Capital Projects
+CIP-0032,Concept Approval,2027-01-31,At Risk,Transportation Planning
+CIP-0032,Design Start,2027-04-02,Not Started,Public Works
+CIP-0032,Design Complete,2027-06-02,In Progress,Consultant
+CIP-0032,ROW/Permitting,2027-08-02,In Progress,Public Works
+CIP-0032,Construction Start,2027-10-02,Complete,Public Works
+CIP-0032,Substantial Completion,2027-12-02,In Progress,Public Works
+CIP-0033,Planning Start,2027-01-07,Complete,Transportation Planning
+CIP-0033,Concept Approval,2027-06-03,Not Started,Capital Projects
+CIP-0033,Design Start,2027-10-28,Not Started,Capital Projects
+CIP-0033,Design Complete,2028-03-23,Complete,Transportation Planning
+CIP-0033,ROW/Permitting,2028-08-17,Not Started,Public Works
+CIP-0033,Construction Start,2029-01-11,Not Started,Engineering
+CIP-0033,Substantial Completion,2029-06-07,At Risk,Transportation Planning
+CIP-0034,Planning Start,2028-03-24,In Progress,Capital Projects
+CIP-0034,Concept Approval,2028-07-06,At Risk,Public Works
+CIP-0034,Design Start,2028-10-18,Complete,Engineering
+CIP-0034,Design Complete,2029-01-30,Not Started,Capital Projects
+CIP-0034,ROW/Permitting,2029-05-14,In Progress,Capital Projects
+CIP-0034,Construction Start,2029-08-26,At Risk,Consultant
+CIP-0034,Substantial Completion,2029-12-08,Complete,Consultant
+CIP-0035,Planning Start,2027-11-23,Not Started,Transportation Planning
+CIP-0035,Concept Approval,2028-04-14,Complete,Public Works
+CIP-0035,Design Start,2028-09-04,In Progress,Public Works
+CIP-0035,Design Complete,2029-01-25,At Risk,Consultant
+CIP-0035,ROW/Permitting,2029-06-17,In Progress,Capital Projects
+CIP-0035,Construction Start,2029-11-07,Not Started,Capital Projects
+CIP-0035,Substantial Completion,2030-03-30,At Risk,Engineering
+CIP-0036,Planning Start,2028-09-19,At Risk,Transportation Planning
+CIP-0036,Concept Approval,2029-01-05,In Progress,Engineering
+CIP-0036,Design Start,2029-04-23,At Risk,Engineering
+CIP-0036,Design Complete,2029-08-09,Not Started,Engineering
+CIP-0036,ROW/Permitting,2029-11-25,At Risk,Consultant
+CIP-0036,Construction Start,2030-03-13,Not Started,Transportation Planning
+CIP-0036,Substantial Completion,2030-06-29,At Risk,Capital Projects
+CIP-0037,Planning Start,2027-07-22,Complete,Capital Projects
+CIP-0037,Concept Approval,2027-12-06,In Progress,Engineering
+CIP-0037,Design Start,2028-04-21,In Progress,Transportation Planning
+CIP-0037,Design Complete,2028-09-05,Complete,Capital Projects
+CIP-0037,ROW/Permitting,2029-01-20,At Risk,Consultant
+CIP-0037,Construction Start,2029-06-06,Not Started,Engineering
+CIP-0037,Substantial Completion,2029-10-21,Complete,Transportation Planning
+CIP-0038,Planning Start,2027-03-01,At Risk,Capital Projects
+CIP-0038,Concept Approval,2027-05-23,In Progress,Transportation Planning
+CIP-0038,Design Start,2027-08-14,In Progress,Transportation Planning
+CIP-0038,Design Complete,2027-11-05,At Risk,Public Works
+CIP-0038,ROW/Permitting,2028-01-27,At Risk,Engineering
+CIP-0038,Construction Start,2028-04-19,Complete,Public Works
+CIP-0038,Substantial Completion,2028-07-11,Complete,Public Works
+CIP-0039,Planning Start,2027-01-12,At Risk,Engineering
+CIP-0039,Concept Approval,2027-04-26,At Risk,Engineering
+CIP-0039,Design Start,2027-08-08,In Progress,Public Works
+CIP-0039,Design Complete,2027-11-20,At Risk,Consultant
+CIP-0039,ROW/Permitting,2028-03-03,Not Started,Transportation Planning
+CIP-0039,Construction Start,2028-06-15,In Progress,Transportation Planning
+CIP-0039,Substantial Completion,2028-09-27,In Progress,Capital Projects
+CIP-0040,Planning Start,2027-12-27,Complete,Engineering
+CIP-0040,Concept Approval,2028-05-19,Not Started,Consultant
+CIP-0040,Design Start,2028-10-10,At Risk,Public Works
+CIP-0040,Design Complete,2029-03-03,Complete,Capital Projects
+CIP-0040,ROW/Permitting,2029-07-25,Not Started,Consultant
+CIP-0040,Construction Start,2029-12-16,Complete,Capital Projects
+CIP-0040,Substantial Completion,2030-05-09,Complete,Engineering
+CIP-0041,Planning Start,2027-06-02,At Risk,Consultant
+CIP-0041,Concept Approval,2027-09-09,Not Started,Capital Projects
+CIP-0041,Design Start,2027-12-17,At Risk,Engineering
+CIP-0041,Design Complete,2028-03-25,Not Started,Transportation Planning
+CIP-0041,ROW/Permitting,2028-07-02,Not Started,Consultant
+CIP-0041,Construction Start,2028-10-09,At Risk,Capital Projects
+CIP-0041,Substantial Completion,2029-01-16,Complete,Consultant
+CIP-0042,Planning Start,2026-10-30,At Risk,Transportation Planning
+CIP-0042,Concept Approval,2027-03-16,Complete,Capital Projects
+CIP-0042,Design Start,2027-07-31,In Progress,Transportation Planning
+CIP-0042,Design Complete,2027-12-15,Complete,Public Works
+CIP-0042,ROW/Permitting,2028-04-30,In Progress,Consultant
+CIP-0042,Construction Start,2028-09-14,Not Started,Capital Projects
+CIP-0042,Substantial Completion,2029-01-29,In Progress,Consultant
+CIP-0043,Planning Start,2028-03-14,In Progress,Engineering
+CIP-0043,Concept Approval,2028-06-17,Not Started,Capital Projects
+CIP-0043,Design Start,2028-09-20,At Risk,Transportation Planning
+CIP-0043,Design Complete,2028-12-24,At Risk,Capital Projects
+CIP-0043,ROW/Permitting,2029-03-29,Complete,Engineering
+CIP-0043,Construction Start,2029-07-02,Complete,Public Works
+CIP-0043,Substantial Completion,2029-10-05,At Risk,Transportation Planning
+CIP-0044,Planning Start,2028-08-17,Complete,Public Works
+CIP-0044,Concept Approval,2028-12-23,In Progress,Consultant
+CIP-0044,Design Start,2029-04-30,Not Started,Public Works
+CIP-0044,Design Complete,2029-09-05,Complete,Consultant
+CIP-0044,ROW/Permitting,2030-01-11,In Progress,Engineering
+CIP-0044,Construction Start,2030-05-19,Not Started,Consultant
+CIP-0044,Substantial Completion,2030-09-24,Complete,Capital Projects
+CIP-0045,Planning Start,2028-07-31,In Progress,Engineering
+CIP-0045,Concept Approval,2028-11-14,Complete,Capital Projects
+CIP-0045,Design Start,2029-02-28,In Progress,Consultant
+CIP-0045,Design Complete,2029-06-14,Complete,Capital Projects
+CIP-0045,ROW/Permitting,2029-09-28,At Risk,Transportation Planning
+CIP-0045,Construction Start,2030-01-12,Complete,Engineering
+CIP-0045,Substantial Completion,2030-04-28,At Risk,Engineering
+CIP-0046,Planning Start,2027-06-26,Complete,Transportation Planning
+CIP-0046,Concept Approval,2027-10-24,In Progress,Consultant
+CIP-0046,Design Start,2028-02-21,At Risk,Consultant
+CIP-0046,Design Complete,2028-06-20,At Risk,Public Works
+CIP-0046,ROW/Permitting,2028-10-18,Complete,Transportation Planning
+CIP-0046,Construction Start,2029-02-15,In Progress,Engineering
+CIP-0046,Substantial Completion,2029-06-15,At Risk,Consultant
+CIP-0047,Planning Start,2028-10-12,At Risk,Transportation Planning
+CIP-0047,Concept Approval,2029-03-06,Complete,Capital Projects
+CIP-0047,Design Start,2029-07-29,Complete,Capital Projects
+CIP-0047,Design Complete,2029-12-21,Complete,Transportation Planning
+CIP-0047,ROW/Permitting,2030-05-15,Complete,Capital Projects
+CIP-0047,Construction Start,2030-10-07,Not Started,Transportation Planning
+CIP-0047,Substantial Completion,2031-03-01,Complete,Engineering
+CIP-0048,Planning Start,2028-02-03,Complete,Public Works
+CIP-0048,Concept Approval,2028-05-19,Not Started,Consultant
+CIP-0048,Design Start,2028-09-02,Not Started,Consultant
+CIP-0048,Design Complete,2028-12-17,At Risk,Transportation Planning
+CIP-0048,ROW/Permitting,2029-04-02,Complete,Public Works
+CIP-0048,Construction Start,2029-07-17,In Progress,Transportation Planning
+CIP-0048,Substantial Completion,2029-10-31,At Risk,Capital Projects
+CIP-0049,Planning Start,2028-10-05,At Risk,Capital Projects
+CIP-0049,Concept Approval,2029-01-16,At Risk,Engineering
+CIP-0049,Design Start,2029-04-29,Complete,Public Works
+CIP-0049,Design Complete,2029-08-10,In Progress,Consultant
+CIP-0049,ROW/Permitting,2029-11-21,At Risk,Engineering
+CIP-0049,Construction Start,2030-03-04,In Progress,Public Works
+CIP-0049,Substantial Completion,2030-06-15,Complete,Transportation Planning
+CIP-0050,Planning Start,2027-07-25,Not Started,Consultant
+CIP-0050,Concept Approval,2027-10-01,In Progress,Consultant
+CIP-0050,Design Start,2027-12-08,At Risk,Capital Projects
+CIP-0050,Design Complete,2028-02-14,In Progress,Consultant
+CIP-0050,ROW/Permitting,2028-04-22,Complete,Public Works
+CIP-0050,Construction Start,2028-06-29,In Progress,Public Works
+CIP-0050,Substantial Completion,2028-09-05,In Progress,Consultant

@@ -1,0 +1,19 @@
+{
+  "weights": {
+    "safety_risk": 20,
+    "ada_accessibility": 15,
+    "asset_condition": 12,
+    "los_performance": 12,
+    "demand_need": 8,
+    "strategic_alignment": 15,
+    "financial_feasibility": 8,
+    "equity_impact": 5,
+    "community_concern": 5
+  },
+  "priority_thresholds": {
+    "Critical": 85,
+    "High": 70,
+    "Medium": 50,
+    "Low": 0
+  }
+}

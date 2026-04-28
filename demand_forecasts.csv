@@ -1,0 +1,101 @@
+project_id,base_year_volume_or_demand,forecast_year_volume_or_demand,forecast_year,growth_context,demand_forecast_confidence
+CIP-0001,8288,17264,2030,Redevelopment area,Medium
+CIP-0002,8703,15618,2045,New development pressure,Medium
+CIP-0003,4511,8738,2040,New development pressure,Low
+CIP-0004,14771,20762,2040,New development pressure,Low
+CIP-0005,23674,25492,2030,Low growth,Medium
+CIP-0006,14412,15189,2035,Redevelopment area,Medium
+CIP-0007,33088,36991,2045,New development pressure,High
+CIP-0008,39137,77431,2030,New development pressure,Medium
+CIP-0009,7344,11796,2040,High growth,Medium
+CIP-0010,34879,59424,2035,New development pressure,Low
+CIP-0011,18562,37408,2030,Moderate growth,Low
+CIP-0012,1959,3883,2040,Redevelopment area,Medium
+CIP-0013,4232,9089,2040,Low growth,High
+CIP-0014,7464,11271,2045,Moderate growth,High
+CIP-0015,3686,7279,2040,High growth,Low
+CIP-0016,42159,67435,2035,Redevelopment area,Medium
+CIP-0017,44839,92478,2045,Moderate growth,Medium
+CIP-0018,40449,51305,2045,Moderate growth,Medium
+CIP-0019,12827,14596,2030,Redevelopment area,Low
+CIP-0020,12993,25197,2035,New development pressure,High
+CIP-0021,19513,37265,2030,New development pressure,High
+CIP-0022,1133,1271,2035,Redevelopment area,Low
+CIP-0023,42146,79246,2040,New development pressure,Medium
+CIP-0024,41228,51048,2040,High growth,Medium
+CIP-0025,6998,7703,2035,High growth,Medium
+CIP-0026,2025,3999,2045,Low growth,Medium
+CIP-0027,7092,14445,2040,Redevelopment area,Medium
+CIP-0028,5522,11587,2040,Redevelopment area,Low
+CIP-0029,7234,11990,2040,New development pressure,Medium
+CIP-0030,13815,20126,2030,Moderate growth,High
+CIP-0031,18339,39192,2045,Redevelopment area,Low
+CIP-0032,28718,34573,2030,Low growth,Low
+CIP-0033,38461,63882,2030,Low growth,Low
+CIP-0034,30489,59375,2035,New development pressure,High
+CIP-0035,4751,9679,2040,New development pressure,High
+CIP-0036,30362,48798,2035,Low growth,Low
+CIP-0037,13498,28233,2045,Low growth,Low
+CIP-0038,38846,79993,2035,Redevelopment area,Medium
+CIP-0039,37590,64781,2045,Low growth,High
+CIP-0040,3623,7394,2035,Redevelopment area,High
+CIP-0041,44198,90215,2035,Redevelopment area,High
+CIP-0042,31014,54174,2030,Redevelopment area,High
+CIP-0043,25114,28181,2035,Moderate growth,Low
+CIP-0044,25810,43902,2035,Low growth,Low
+CIP-0045,6247,13082,2035,Low growth,Low
+CIP-0046,30674,33924,2035,Moderate growth,High
+CIP-0047,2998,6355,2045,High growth,Low
+CIP-0048,10154,16125,2045,Low growth,High
+CIP-0049,6429,8132,2035,New development pressure,High
+CIP-0050,21286,24940,2045,Low growth,Low
+CIP-0051,2047,3457,2030,New development pressure,High
+CIP-0052,40722,71456,2030,Low growth,High
+CIP-0053,35847,62995,2045,Redevelopment area,High
+CIP-0054,600,1016,2035,Low growth,Low
+CIP-0055,33327,66096,2045,Moderate growth,Low
+CIP-0056,42702,80957,2045,Low growth,High
+CIP-0057,5759,9663,2040,Low growth,Low
+CIP-0058,15758,31944,2030,Low growth,Medium
+CIP-0059,18056,25244,2040,Moderate growth,Medium
+CIP-0060,39842,68236,2040,Moderate growth,Low
+CIP-0061,5267,5984,2030,New development pressure,Low
+CIP-0062,34186,51045,2045,New development pressure,High
+CIP-0063,42605,55064,2030,Low growth,Low
+CIP-0064,2106,3834,2035,Redevelopment area,Low
+CIP-0065,11884,20934,2040,Redevelopment area,Medium
+CIP-0066,8890,11917,2040,High growth,Low
+CIP-0067,21360,31818,2035,Redevelopment area,Low
+CIP-0068,42961,77513,2045,New development pressure,Medium
+CIP-0069,18069,35671,2030,Redevelopment area,High
+CIP-0070,1471,2120,2040,High growth,Low
+CIP-0071,15748,32650,2030,New development pressure,Low
+CIP-0072,6971,7603,2040,Redevelopment area,High
+CIP-0073,22182,32656,2030,Redevelopment area,Low
+CIP-0074,13961,23183,2035,Redevelopment area,High
+CIP-0075,41485,47835,2035,Moderate growth,Medium
+CIP-0076,993,1858,2045,Low growth,Low
+CIP-0077,40116,62327,2035,High growth,Medium
+CIP-0078,16385,23643,2030,Low growth,High
+CIP-0079,13811,24684,2035,Low growth,High
+CIP-0080,4551,8415,2040,Low growth,Low
+CIP-0081,4485,7472,2030,High growth,Low
+CIP-0082,9421,15929,2045,New development pressure,High
+CIP-0083,18021,38002,2045,Moderate growth,Low
+CIP-0084,16807,23506,2045,Moderate growth,Medium
+CIP-0085,6315,12885,2045,High growth,Medium
+CIP-0086,13603,14763,2035,Low growth,Low
+CIP-0087,23086,42047,2040,New development pressure,Low
+CIP-0088,12548,14223,2030,Moderate growth,High
+CIP-0089,43462,74973,2040,Moderate growth,Low
+CIP-0090,9514,15256,2030,Redevelopment area,Medium
+CIP-0091,42844,49368,2035,Low growth,Low
+CIP-0092,19491,20797,2035,High growth,Medium
+CIP-0093,35632,67025,2035,High growth,High
+CIP-0094,16591,24489,2035,New development pressure,High
+CIP-0095,7405,15204,2035,High growth,Medium
+CIP-0096,2071,2707,2035,Moderate growth,Medium
+CIP-0097,24043,31905,2045,High growth,Low
+CIP-0098,3414,3975,2045,High growth,Low
+CIP-0099,18570,20126,2045,Redevelopment area,Low
+CIP-0100,7301,11527,2045,Low growth,Medium

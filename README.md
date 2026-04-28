@@ -68,3 +68,20 @@ Deploy through Streamlit Community Cloud using `app.py` as the main file.
 2. Fill the `Projects_Assets` sheet.
 3. Optionally fill `Demand_Forecasts`, `Implementation_Schedule`, and `Funding_Sources`.
 4. Upload the completed workbook in the app sidebar.
+
+
+## Configurable Strategic Alignment Framework
+
+The platform now supports configurable strategic alignment scoring rather than hard-coded policy initiatives.
+
+Agencies can customize strategic priorities such as:
+- Vision Zero
+- Complete Streets
+- ADA Transition Plans
+- Metropolitan Transportation Plans (MTPs)
+- Long Range Transportation Plans (LRTPs)
+- Resilience strategies
+- Equity strategies
+- Transit-supportive development goals
+
+This allows the platform to adapt to different agency priorities and policy environments.

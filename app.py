@@ -263,6 +263,45 @@ def project_why(row):
 default_projects, default_funding, default_schedule, default_demand, dictionary = load_default_tables()
 projects, funding, schedule, demand = default_projects, default_funding, default_schedule, default_demand
 
+
+def generate_project_justification(row):
+    reasons = []
+    if row.get("safety_risk") == "High":
+        reasons.append("high safety concerns")
+    if row.get("ada_accessibility_concern") == "Yes":
+        reasons.append("ADA accessibility deficiencies")
+    if row.get("projected_los_no_build") in ["E","F"]:
+        reasons.append("projected LOS deterioration")
+    if row.get("condition") == "Poor":
+        reasons.append("poor infrastructure condition")
+    if row.get("community_concern_level") == "High":
+        reasons.append("strong community concern")
+    if row.get("strategic_alignment_score",0) >= 70:
+        reasons.append("strong strategic alignment")
+
+    if not reasons:
+        reasons.append("multiple transportation planning considerations")
+
+    return (
+        f"This project is prioritized due to " +
+        ", ".join(reasons) +
+        ". The recommendation is based on the platform's integrated transportation planning and CIP prioritization framework."
+    )
+
+def generate_executive_summary(scored):
+    return (
+        f"The analysis identified {len(scored)} candidate projects, including "
+        f"{len(scored[scored['priority_level'].isin(['Critical','High'])])} high-priority projects. "
+        f"Total estimated capital need is ${scored['estimated_capital_cost'].sum():,.0f}."
+    )
+
+def generate_funding_risk(scored):
+    return (
+        f"The current funding gap across filtered projects is "
+        f"${scored['funding_gap'].sum():,.0f}. Deferred implementation may increase future costs."
+    )
+
+
 st.title("UrbaniticsAI Transportation CIP Platform MVP v4")
 st.caption("Transportation infrastructure decision intelligence for CIP planning, prioritization, funding, LOS, strategic alignment, and implementation.")
 
@@ -333,7 +372,8 @@ tabs = st.tabs([
     "CIP Prioritization",
     "Deferred Maintenance",
     "Executive Export",
-    "Data Schema"
+    "Data Schema",
+    "AI-Assisted Narratives"
 ])
 
 with tabs[0]:
@@ -585,3 +625,45 @@ with tabs[13]:
     - `demand_forecasts.csv`: demand and growth assumptions
     - `scoring_config.json`: default scoring weights
     """)
+
+
+
+with tabs[-1]:
+    st.subheader("AI-Assisted Planning Narratives")
+    st.caption("Rule-based narrative generation for explainable planning support.")
+
+    narrative_type = st.selectbox(
+        "Narrative Type",
+        [
+            "Executive Summary",
+            "Funding Risk Summary",
+            "Project Justification"
+        ]
+    )
+
+    if narrative_type == "Executive Summary":
+        output = generate_executive_summary(scored)
+
+    elif narrative_type == "Funding Risk Summary":
+        output = generate_funding_risk(scored)
+
+    else:
+        selected_project = st.selectbox(
+            "Select Project",
+            scored["project_name"].tolist()
+        )
+        row = scored[scored["project_name"] == selected_project].iloc[0]
+        output = generate_project_justification(row)
+
+    st.text_area("Generated Narrative", output, height=250)
+
+    st.download_button(
+        "Download Narrative",
+        output,
+        "urbaniticsai_narrative.txt",
+        "text/plain"
+    )
+
+    st.info(
+        "This feature provides AI-assisted planning support narratives and does not make automatic final decisions."
+    )

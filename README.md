@@ -85,3 +85,13 @@ Agencies can customize strategic priorities such as:
 - Transit-supportive development goals
 
 This allows the platform to adapt to different agency priorities and policy environments.
+
+
+## v6 AI-Assisted Narrative Features
+
+This version adds:
+- Executive summary generator
+- Funding risk summary generator
+- Project justification generator
+
+These are lightweight explainable AI-assisted planning support features that do not require external APIs.

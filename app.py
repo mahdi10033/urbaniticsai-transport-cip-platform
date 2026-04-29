@@ -150,6 +150,12 @@ def priority_badge_text(level):
     }.get(level, level)
 
 def highlight_priority_table(df):
+    """
+    Safely highlight the priority_level column.
+
+    Newer pandas versions removed Styler.applymap and replaced it with Styler.map.
+    This helper tries the newer method first and falls back gracefully.
+    """
     def style_priority(val):
         if val == "Critical":
             return "background-color: #FFCDD2; color: #7F0000; font-weight: bold;"
@@ -160,9 +166,20 @@ def highlight_priority_table(df):
         if val == "Low":
             return "background-color: #C8E6C9; color: #1B5E20;"
         return ""
-    if "priority_level" in df.columns:
-        return df.style.applymap(style_priority, subset=["priority_level"])
-    return df
+
+    if "priority_level" not in df.columns:
+        return df
+
+    styler = df.style
+    try:
+        return styler.map(style_priority, subset=["priority_level"])
+    except AttributeError:
+        try:
+            return styler.applymap(style_priority, subset=["priority_level"])
+        except Exception:
+            return df
+    except Exception:
+        return df
 
 
 LEVEL_MAP = {"Low": 1, "Medium": 3, "High": 5}

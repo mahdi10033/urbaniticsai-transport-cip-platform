@@ -724,30 +724,30 @@ with st.sidebar:
 
     st.header("Scoring Weights (%)")
 
-st.caption("Weights must total 100%. These percentages determine how much each criterion contributes to the final priority score.")
+    st.caption("Weights must total 100%. These percentages determine how much each criterion contributes to the final priority score.")
 
-weights = {}
+    weights = {}
 
-# Percentage-based weighting. The selected scenario provides default weights,
-# but users can adjust them as long as the final total equals 100%.
-for key, default in base_weights.items():
-    weights[key] = st.slider(
-        key.replace("_", " ").title(),
-        min_value=0,
-        max_value=100,
-        value=int(default),
-        step=1,
-        help="Weight as percentage of the total priority score"
-    )
+    # Percentage-based weighting. The selected scenario provides default weights,
+    # but users can adjust them as long as the final total equals 100%.
+    for key, default in base_weights.items():
+        weights[key] = st.slider(
+            key.replace("_", " ").title(),
+            min_value=0,
+            max_value=100,
+            value=int(default),
+            step=1,
+            help="Weight as percentage of the total priority score"
+        )
 
-total_weight = sum(weights.values())
+    total_weight = sum(weights.values())
 
-if total_weight == 100:
-    st.success(f"Total Weight: {total_weight}%")
-else:
-    st.error(f"Total Weight: {total_weight}%. Please adjust the weights so the total equals 100%.")
+    if total_weight == 100:
+        st.success(f"Total Weight: {total_weight}%")
+    else:
+        st.error(f"Total Weight: {total_weight}%. Please adjust the weights so the total equals 100%.")
 
-st.header("Filters")
+    st.header("Filters")
     district_filter = st.multiselect("District", sorted(projects["district"].unique()))
     asset_filter = st.multiselect("Asset Type", sorted(projects["asset_type"].unique()))
     priority_filter = st.multiselect("Priority Level", ["Critical", "High", "Medium", "Low"])

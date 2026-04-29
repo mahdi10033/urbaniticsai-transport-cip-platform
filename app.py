@@ -811,7 +811,7 @@ tabs = st.tabs([
     "Executive Overview",
     "Priority Map",
     "Top Priorities",
-    "Risk Indicators",
+    "Portfolio Risk Indicators",
     "Scenario Planning",
     "Decision Explainability",
     "Asset Inventory & Needs",
@@ -920,7 +920,7 @@ with tabs[2]:
     st.plotly_chart(fig, use_container_width=True)
 
 with tabs[3]:
-    st.subheader("Risk Indicators")
+    st.subheader("Portfolio Risk Indicators")
     risk = risk_indicators(scored)
     risk_df = pd.DataFrame({"Risk Indicator": list(risk.keys()), "Count": list(risk.values())})
     st.dataframe(risk_df, use_container_width=True, hide_index=True)

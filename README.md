@@ -106,3 +106,15 @@ This version fixes:
 - visible Decision Explainability module
 
 The Decision Explainability module explains why each project ranked where it did and supports exportable board-ready justification text.
+
+
+## v10 update: Percentage-Based Weights
+
+This version revises the scoring system so all weights must total exactly 100%.
+
+The sidebar now shows:
+- percentage-based scoring weights
+- total weight validation
+- error warning if total is not 100%
+
+The scoring engine stops until the user adjusts the weights to total 100%.

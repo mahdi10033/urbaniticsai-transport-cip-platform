@@ -1,4 +1,5 @@
 {
+  "weighting_rule": "Weights are percentages and must total 100.",
   "weights": {
     "safety_risk": 20,
     "ada_accessibility": 15,

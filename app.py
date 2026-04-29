@@ -249,22 +249,60 @@ BASE_WEIGHTS = {
 }
 
 SCENARIOS = {
-    "Balanced": BASE_WEIGHTS,
+    "Balanced": {
+        "safety_risk": 20,
+        "ada_accessibility": 15,
+        "asset_condition": 12,
+        "los_performance": 12,
+        "demand_need": 8,
+        "strategic_alignment": 15,
+        "financial_feasibility": 8,
+        "equity_impact": 5,
+        "community_concern": 5
+    },
     "Safety First": {
-        "safety_risk": 35, "ada_accessibility": 12, "asset_condition": 10, "los_performance": 12,
-        "demand_need": 6, "strategic_alignment": 10, "financial_feasibility": 5, "equity_impact": 5, "community_concern": 5
+        "safety_risk": 35,
+        "ada_accessibility": 12,
+        "asset_condition": 10,
+        "los_performance": 12,
+        "demand_need": 6,
+        "strategic_alignment": 10,
+        "financial_feasibility": 5,
+        "equity_impact": 5,
+        "community_concern": 5
     },
     "ADA & Accessibility First": {
-        "safety_risk": 15, "ada_accessibility": 35, "asset_condition": 10, "los_performance": 8,
-        "demand_need": 5, "strategic_alignment": 12, "financial_feasibility": 5, "equity_impact": 5, "community_concern": 5
+        "safety_risk": 15,
+        "ada_accessibility": 35,
+        "asset_condition": 10,
+        "los_performance": 8,
+        "demand_need": 5,
+        "strategic_alignment": 12,
+        "financial_feasibility": 5,
+        "equity_impact": 5,
+        "community_concern": 5
     },
     "Financial Feasibility First": {
-        "safety_risk": 15, "ada_accessibility": 10, "asset_condition": 10, "los_performance": 10,
-        "demand_need": 5, "strategic_alignment": 15, "financial_feasibility": 25, "equity_impact": 5, "community_concern": 5
+        "safety_risk": 15,
+        "ada_accessibility": 10,
+        "asset_condition": 10,
+        "los_performance": 10,
+        "demand_need": 5,
+        "strategic_alignment": 15,
+        "financial_feasibility": 25,
+        "equity_impact": 5,
+        "community_concern": 5
     },
     "Strategic Alignment First": {
-        "safety_risk": 15, "ada_accessibility": 10, "asset_condition": 10, "los_performance": 10,
-        "demand_need": 8, "strategic_alignment": 30, "financial_feasibility": 7, "equity_impact": 5, "community_concern": 5
+        "safety_risk": 15,
+        "ada_accessibility": 10,
+        "asset_condition": 10,
+        "los_performance": 10,
+        "demand_need": 8,
+        "strategic_alignment": 30,
+        "financial_feasibility": 7,
+        "equity_impact": 5,
+        "community_concern": 5
     }
 }
 
@@ -412,6 +450,8 @@ def calculate_scores(df, demand, weights):
     }
 
     total_weight = sum(weights.values())
+    if total_weight != 100:
+        raise ValueError("Scoring weights must total 100%.")
     data["priority_score"] = 0.0
     for key, raw_col in components.items():
         score_col = f"{key}_score"
@@ -682,12 +722,32 @@ with st.sidebar:
     scenario_name = st.selectbox("Prioritization scenario", list(SCENARIOS.keys()))
     base_weights = SCENARIOS[scenario_name].copy()
 
-    st.header("Scoring Weights")
-    weights = {}
-    for key, default in base_weights.items():
-        weights[key] = st.slider(key.replace("_", " ").title(), 0, 45, default)
+    st.header("Scoring Weights (%)")
 
-    st.header("Filters")
+st.caption("Weights must total 100%. These percentages determine how much each criterion contributes to the final priority score.")
+
+weights = {}
+
+# Percentage-based weighting. The selected scenario provides default weights,
+# but users can adjust them as long as the final total equals 100%.
+for key, default in base_weights.items():
+    weights[key] = st.slider(
+        key.replace("_", " ").title(),
+        min_value=0,
+        max_value=100,
+        value=int(default),
+        step=1,
+        help="Weight as percentage of the total priority score"
+    )
+
+total_weight = sum(weights.values())
+
+if total_weight == 100:
+    st.success(f"Total Weight: {total_weight}%")
+else:
+    st.error(f"Total Weight: {total_weight}%. Please adjust the weights so the total equals 100%.")
+
+st.header("Filters")
     district_filter = st.multiselect("District", sorted(projects["district"].unique()))
     asset_filter = st.multiselect("Asset Type", sorted(projects["asset_type"].unique()))
     priority_filter = st.multiselect("Priority Level", ["Critical", "High", "Medium", "Low"])
@@ -701,6 +761,10 @@ if district_filter:
     filtered_projects = filtered_projects[filtered_projects["district"].isin(district_filter)]
 if asset_filter:
     filtered_projects = filtered_projects[filtered_projects["asset_type"].isin(asset_filter)]
+
+if sum(weights.values()) != 100:
+    st.error("Scoring cannot run until the total weight equals 100%. Please adjust the sidebar weights.")
+    st.stop()
 
 scored_all = calculate_scores(filtered_projects, demand, weights)
 scored = scored_all.copy()

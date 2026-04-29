@@ -95,3 +95,16 @@ This version adds:
 - Project justification generator
 
 These are lightweight explainable AI-assisted planning support features that do not require external APIs.
+
+
+## v8 update: Decision Explainability
+
+This version adds a dedicated Decision Explainability module that helps agencies understand and communicate why a project ranked where it did.
+
+The module produces:
+- score drivers
+- readiness tradeoffs
+- LOS and mobility context
+- policy alignment notes
+- funding readiness notes
+- exportable board-ready explanation text

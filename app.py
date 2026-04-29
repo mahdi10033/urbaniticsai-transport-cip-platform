@@ -31,8 +31,44 @@ section[data-testid="stSidebar"] {
     background-color: #1F2A38;
 }
 
-section[data-testid="stSidebar"] * {
+section[data-testid="stSidebar"] {
+    background-color: #1F2A38;
+}
+
+/* Sidebar section titles and labels */
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] h4,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] label {
     color: white !important;
+}
+
+/* Input box text */
+section[data-testid="stSidebar"] input {
+    color: #111827 !important;
+    background-color: white !important;
+}
+
+/* Dropdown selected text */
+section[data-testid="stSidebar"] div[data-baseweb="select"] span {
+    color: #111827 !important;
+}
+
+/* Multiselect selected text */
+section[data-testid="stSidebar"] div[data-baseweb="tag"] span {
+    color: #111827 !important;
+}
+
+/* Number input buttons/text */
+section[data-testid="stSidebar"] button {
+    color: #111827 !important;
+}
+
+/* File uploader text */
+section[data-testid="stSidebar"] small {
+    color: #DDEAF6 !important;
 }
 
 section[data-testid="stSidebar"] .stSelectbox label,

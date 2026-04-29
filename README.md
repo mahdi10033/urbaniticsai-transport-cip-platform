@@ -168,3 +168,15 @@ The new Sub-Score Logic tab shows:
 - maximum possible scores
 - normalized 0-100 criterion scores
 - weighted contribution to final priority score
+
+
+## v14 update: Two-Level Navigation
+
+This version reorganizes the platform into two main sections:
+
+1. Portfolio Intelligence
+2. Project Intelligence
+
+Portfolio Intelligence supports system-level analysis across all projects.
+
+Project Intelligence supports selected-project analysis, including decision explainability, score breakdowns, sub-score logic, AI narratives, and full project report download.

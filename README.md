@@ -147,3 +147,24 @@ For each project, the platform now displays:
 - evidence/input behind each criterion
 - final score formula
 - downloadable score breakdown report
+
+
+## v13 update: Transparent Normalized Scoring Framework
+
+This version adds a complete Sub-Score Logic module.
+
+It shows how qualitative and quantitative values are converted into numeric scores:
+
+- Yes/No values become 1/0
+- Low/Medium/High values become 1/2/3
+- Weak/Moderate/Strong values become 1/2/3
+- Strategic alignment is calculated by summing plan-alignment components
+- Quantitative variables use min-max normalization
+- Financial feasibility uses reverse scoring for cost burden, funding gap, and O&M burden
+
+The new Sub-Score Logic tab shows:
+- sub-component scores
+- raw score totals
+- maximum possible scores
+- normalized 0-100 criterion scores
+- weighted contribution to final priority score

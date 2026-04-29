@@ -815,6 +815,369 @@ def component_scoring_explanations():
     }
 
 
+
+# =====================================================
+# TRANSPARENT NORMALIZED SCORING FRAMEWORK v13
+# =====================================================
+
+BINARY_MAP = {
+    "Yes": 1,
+    "No": 0,
+    "yes": 1,
+    "no": 0,
+    True: 1,
+    False: 0
+}
+
+LOW_MED_HIGH_MAP = {
+    "Low": 1,
+    "Medium": 2,
+    "High": 3,
+    "low": 1,
+    "medium": 2,
+    "high": 3
+}
+
+WEAK_MOD_STRONG_MAP = {
+    "Weak": 1,
+    "Moderate": 2,
+    "Strong": 3,
+    "weak": 1,
+    "moderate": 2,
+    "strong": 3
+}
+
+CONDITION_MAP_TRANSPARENT = {
+    "Good": 1,
+    "Fair": 2,
+    "Poor": 3,
+    "good": 1,
+    "fair": 2,
+    "poor": 3
+}
+
+LOS_MAP_TRANSPARENT = {
+    "A": 1,
+    "B": 2,
+    "C": 3,
+    "D": 4,
+    "E": 5,
+    "F": 6
+}
+
+def binary_score(value, positive_value="Yes"):
+    """Binary criteria: assign 1 to desirable/priority-increasing condition and 0 otherwise."""
+    if pd.isna(value):
+        return 0
+    return 1 if str(value).strip().lower() == str(positive_value).strip().lower() else 0
+
+def ordinal_score(value, mapping):
+    """Ordinal qualitative criteria: Low/Weak=1, Medium/Moderate=2, High/Strong=3."""
+    if pd.isna(value):
+        return 0
+    return mapping.get(value, mapping.get(str(value).strip(), 0))
+
+def normalize_raw_score(raw_score, max_score):
+    """Normalize raw score to 0-100."""
+    if max_score <= 0:
+        return 0
+    return round((raw_score / max_score) * 100, 1)
+
+def minmax_normalize(value, min_value, max_value):
+    """Normalize quantitative values to 0-100 using min-max normalization."""
+    if pd.isna(value) or max_value == min_value:
+        return 0
+    return round(((value - min_value) / (max_value - min_value)) * 100, 1)
+
+def reverse_minmax_normalize(value, min_value, max_value):
+    """Reverse-normalize quantitative values where lower values are more desirable."""
+    if pd.isna(value) or max_value == min_value:
+        return 100
+    return round((1 - ((value - min_value) / (max_value - min_value))) * 100, 1)
+
+def component_table(items):
+    """
+    Build a table from sub-component score items.
+    Each item should include Component, Input Value, Raw Score, Max Score, and Logic.
+    """
+    df = pd.DataFrame(items)
+    raw_total = df["Raw Score"].sum()
+    max_total = df["Max Score"].sum()
+    normalized = normalize_raw_score(raw_total, max_total)
+    return df, raw_total, max_total, normalized
+
+def safety_component_breakdown(row):
+    items = [
+        {
+            "Component": "Safety risk level",
+            "Input Value": row.get("safety_risk"),
+            "Raw Score": ordinal_score(row.get("safety_risk"), LOW_MED_HIGH_MAP),
+            "Max Score": 3,
+            "Logic": "Low=1, Medium=2, High=3"
+        },
+        {
+            "Component": "Crash history nearby",
+            "Input Value": row.get("crash_history_nearby"),
+            "Raw Score": binary_score(row.get("crash_history_nearby")),
+            "Max Score": 1,
+            "Logic": "Yes=1, No=0"
+        },
+        {
+            "Component": "Near school",
+            "Input Value": row.get("near_school"),
+            "Raw Score": binary_score(row.get("near_school")),
+            "Max Score": 1,
+            "Logic": "Yes=1, No=0"
+        },
+        {
+            "Component": "Near transit",
+            "Input Value": row.get("near_transit"),
+            "Raw Score": binary_score(row.get("near_transit")),
+            "Max Score": 1,
+            "Logic": "Yes=1, No=0"
+        },
+    ]
+    return component_table(items)
+
+def ada_component_breakdown(row):
+    items = [
+        {
+            "Component": "ADA/accessibility concern",
+            "Input Value": row.get("ada_accessibility_concern"),
+            "Raw Score": binary_score(row.get("ada_accessibility_concern")),
+            "Max Score": 1,
+            "Logic": "Yes=1, No=0"
+        }
+    ]
+    return component_table(items)
+
+def condition_component_breakdown(row):
+    items = [
+        {
+            "Component": "Asset condition",
+            "Input Value": row.get("condition"),
+            "Raw Score": ordinal_score(row.get("condition"), CONDITION_MAP_TRANSPARENT),
+            "Max Score": 3,
+            "Logic": "Good=1, Fair=2, Poor=3"
+        }
+    ]
+    return component_table(items)
+
+def los_component_breakdown(row):
+    current = LOS_MAP_TRANSPARENT.get(str(row.get("current_los")).strip(), 0)
+    nobuild = LOS_MAP_TRANSPARENT.get(str(row.get("projected_los_no_build")).strip(), 0)
+    after = LOS_MAP_TRANSPARENT.get(str(row.get("expected_los_after_project")).strip(), 0)
+
+    improvement = max(nobuild - after, 0)
+
+    items = [
+        {
+            "Component": "Current LOS severity",
+            "Input Value": row.get("current_los"),
+            "Raw Score": current,
+            "Max Score": 6,
+            "Logic": "A=1, B=2, C=3, D=4, E=5, F=6"
+        },
+        {
+            "Component": "Projected no-build LOS severity",
+            "Input Value": row.get("projected_los_no_build"),
+            "Raw Score": nobuild,
+            "Max Score": 6,
+            "Logic": "A=1, B=2, C=3, D=4, E=5, F=6"
+        },
+        {
+            "Component": "LOS improvement benefit",
+            "Input Value": f"{row.get('projected_los_no_build')} to {row.get('expected_los_after_project')}",
+            "Raw Score": improvement,
+            "Max Score": 5,
+            "Logic": "Projected no-build LOS score minus expected after-project LOS score"
+        }
+    ]
+    return component_table(items)
+
+def demand_component_breakdown(row, scored):
+    forecast = row.get("forecast_year_volume_or_demand", 0)
+    min_forecast = scored["forecast_year_volume_or_demand"].min() if "forecast_year_volume_or_demand" in scored else forecast
+    max_forecast = scored["forecast_year_volume_or_demand"].max() if "forecast_year_volume_or_demand" in scored else forecast
+    forecast_norm_0_3 = round(minmax_normalize(forecast, min_forecast, max_forecast) / 100 * 3, 2)
+
+    items = [
+        {
+            "Component": "Demand growth level",
+            "Input Value": row.get("demand_growth_level"),
+            "Raw Score": ordinal_score(row.get("demand_growth_level"), LOW_MED_HIGH_MAP),
+            "Max Score": 3,
+            "Logic": "Low=1, Medium=2, High=3"
+        },
+        {
+            "Component": "Forecast demand volume",
+            "Input Value": forecast,
+            "Raw Score": forecast_norm_0_3,
+            "Max Score": 3,
+            "Logic": "Min-max normalized across project portfolio, then converted to 0-3 scale"
+        }
+    ]
+    return component_table(items)
+
+def strategic_alignment_component_breakdown(row):
+    components = [
+        ("MTP alignment", "mtp_alignment"),
+        ("LRTP alignment", "lrtp_alignment"),
+        ("Complete Streets alignment", "complete_streets_alignment"),
+        ("Vision Zero alignment", "vision_zero_alignment"),
+        ("ADA Transition Plan alignment", "ada_transition_plan_alignment"),
+        ("Resilience strategy alignment", "resilience_alignment"),
+        ("Comprehensive plan alignment", "comp_plan_alignment"),
+    ]
+
+    items = []
+    for label, col in components:
+        items.append({
+            "Component": label,
+            "Input Value": row.get(col),
+            "Raw Score": ordinal_score(row.get(col), WEAK_MOD_STRONG_MAP),
+            "Max Score": 3,
+            "Logic": "Weak=1, Moderate=2, Strong=3"
+        })
+
+    return component_table(items)
+
+def financial_component_breakdown(row, scored):
+    cap_cost = row.get("estimated_capital_cost", 0)
+    gap = row.get("funding_gap", 0)
+    om = row.get("estimated_annual_om_cost", 0)
+
+    min_cost, max_cost = scored["estimated_capital_cost"].min(), scored["estimated_capital_cost"].max()
+    min_gap, max_gap = scored["funding_gap"].min(), scored["funding_gap"].max()
+    min_om, max_om = scored["estimated_annual_om_cost"].min(), scored["estimated_annual_om_cost"].max()
+
+    cost_score = round(reverse_minmax_normalize(cap_cost, min_cost, max_cost) / 100 * 3, 2)
+    gap_score = round(reverse_minmax_normalize(gap, min_gap, max_gap) / 100 * 3, 2)
+    om_score = round(reverse_minmax_normalize(om, min_om, max_om) / 100 * 3, 2)
+
+    items = [
+        {
+            "Component": "Capital cost burden",
+            "Input Value": f"${cap_cost:,.0f}",
+            "Raw Score": cost_score,
+            "Max Score": 3,
+            "Logic": "Reverse min-max normalized. Lower cost receives higher score."
+        },
+        {
+            "Component": "Funding gap burden",
+            "Input Value": f"${gap:,.0f}",
+            "Raw Score": gap_score,
+            "Max Score": 3,
+            "Logic": "Reverse min-max normalized. Smaller funding gap receives higher score."
+        },
+        {
+            "Component": "Annual O&M burden",
+            "Input Value": f"${om:,.0f}",
+            "Raw Score": om_score,
+            "Max Score": 3,
+            "Logic": "Reverse min-max normalized. Lower annual O&M burden receives higher score."
+        },
+    ]
+
+    return component_table(items)
+
+def equity_component_breakdown(row):
+    items = [
+        {
+            "Component": "Equity priority area",
+            "Input Value": row.get("equity_priority_area"),
+            "Raw Score": binary_score(row.get("equity_priority_area")),
+            "Max Score": 1,
+            "Logic": "Yes=1, No=0"
+        }
+    ]
+    return component_table(items)
+
+def community_component_breakdown(row, scored):
+    complaints = row.get("citizen_complaints_count", 0)
+    min_complaints = scored["citizen_complaints_count"].min()
+    max_complaints = scored["citizen_complaints_count"].max()
+    complaint_score = round(minmax_normalize(complaints, min_complaints, max_complaints) / 100 * 3, 2)
+
+    items = [
+        {
+            "Component": "Community concern level",
+            "Input Value": row.get("community_concern_level"),
+            "Raw Score": ordinal_score(row.get("community_concern_level"), LOW_MED_HIGH_MAP),
+            "Max Score": 3,
+            "Logic": "Low=1, Medium=2, High=3"
+        },
+        {
+            "Component": "Citizen complaint count",
+            "Input Value": complaints,
+            "Raw Score": complaint_score,
+            "Max Score": 3,
+            "Logic": "Min-max normalized across project portfolio, then converted to 0-3 scale"
+        }
+    ]
+
+    return component_table(items)
+
+def transparent_score_breakdowns(row, scored):
+    return {
+        "Safety Risk": safety_component_breakdown(row),
+        "ADA & Accessibility": ada_component_breakdown(row),
+        "Asset Condition": condition_component_breakdown(row),
+        "LOS Performance": los_component_breakdown(row),
+        "Demand Need": demand_component_breakdown(row, scored),
+        "Strategic Alignment": strategic_alignment_component_breakdown(row),
+        "Financial Feasibility": financial_component_breakdown(row, scored),
+        "Equity Impact": equity_component_breakdown(row),
+        "Community Concern": community_component_breakdown(row, scored),
+    }
+
+def build_transparent_score_breakdown(row, scored, weights):
+    breakdowns = transparent_score_breakdowns(row, scored)
+
+    rows = []
+    for criterion, (sub_df, raw_total, max_total, normalized_score) in breakdowns.items():
+        weight_key = {
+            "Safety Risk": "safety_risk",
+            "ADA & Accessibility": "ada_accessibility",
+            "Asset Condition": "asset_condition",
+            "LOS Performance": "los_performance",
+            "Demand Need": "demand_need",
+            "Strategic Alignment": "strategic_alignment",
+            "Financial Feasibility": "financial_feasibility",
+            "Equity Impact": "equity_impact",
+            "Community Concern": "community_concern",
+        }[criterion]
+
+        weight = weights.get(weight_key, 0)
+        contribution = round(normalized_score * weight / 100, 2)
+
+        rows.append({
+            "Criterion": criterion,
+            "Raw Score": round(raw_total, 2),
+            "Maximum Raw Score": round(max_total, 2),
+            "Component Score (0-100)": normalized_score,
+            "Weight (%)": weight,
+            "Weighted Contribution": contribution,
+        })
+
+    return pd.DataFrame(rows), breakdowns
+
+def generate_transparent_formula_text(row, summary_df):
+    lines = []
+    for _, r in summary_df.iterrows():
+        lines.append(
+            f"{r['Criterion']}: ({r['Raw Score']} / {r['Maximum Raw Score']}) × 100 = {r['Component Score (0-100)']} ; "
+            f"{r['Component Score (0-100)']} × {r['Weight (%)']}% = {r['Weighted Contribution']}"
+        )
+
+    return (
+        "Transparent Priority Score Calculation\\n\\n"
+        + "\\n".join(lines)
+        + f"\\n\\nFinal Priority Score = {summary_df['Weighted Contribution'].sum():.2f}"
+        + f"\\nDisplayed Priority Score = {row.get('priority_score')}"
+    )
+
+
 render_header()
 
 st.success("Demo Context: Orange County, Florida public-source-informed transportation planning dataset")
@@ -922,6 +1285,7 @@ tabs = st.tabs([
     "Scenario Planning",
     "Decision Explainability",
     "Score Breakdown",
+    "Sub-Score Logic",
     "Asset Inventory & Needs",
     "Mobility Performance",
     "Strategic Alignment",
@@ -1216,7 +1580,80 @@ Detailed Contributions:
     )
 
 
+
 with tabs[7]:
+    st.subheader("Sub-Score Logic")
+    st.caption("This module explains how qualitative and quantitative project inputs are converted into numeric criterion scores.")
+
+    selected_subscore_project = st.selectbox(
+        "Select a project for sub-score logic",
+        scored["project_name"].tolist(),
+        key="subscore_logic_project"
+    )
+
+    subscore_row = scored[scored["project_name"] == selected_subscore_project].iloc[0]
+
+    summary_df, detailed_breakdowns = build_transparent_score_breakdown(subscore_row, scored, weights)
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Final Priority Score", f"{subscore_row['priority_score']}")
+    c2.metric("Transparent Calculated Score", f"{summary_df['Weighted Contribution'].sum():.2f}")
+    c3.metric("Priority Level", f"{subscore_row['priority_level']}")
+    c4.metric("Current Rank", f"#{int(subscore_row['rank'])}")
+
+    st.markdown("### Criterion-Level Summary")
+    st.dataframe(
+        summary_df,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    st.markdown("### Criterion Contribution Chart")
+    fig = px.bar(
+        summary_df,
+        x="Criterion",
+        y="Weighted Contribution",
+        text="Weighted Contribution",
+        title="Weighted Contribution to Final Priority Score"
+    )
+    fig.update_layout(xaxis_tickangle=-35)
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("### Detailed Sub-Component Scoring")
+    for criterion, (detail_df, raw_total, max_total, normalized_score) in detailed_breakdowns.items():
+        with st.expander(f"{criterion}: raw {round(raw_total,2)} / {round(max_total,2)} → {normalized_score}/100"):
+            st.dataframe(detail_df, use_container_width=True, hide_index=True)
+            st.write(
+                f"Normalized {criterion} score = ({round(raw_total,2)} / {round(max_total,2)}) × 100 = {normalized_score}"
+            )
+
+    st.markdown("### Full Transparent Formula")
+    formula_text = generate_transparent_formula_text(subscore_row, summary_df)
+    st.code(formula_text)
+
+    report = f"""Sub-Score Logic Report
+
+Project: {subscore_row['project_name']}
+Project ID: {subscore_row['project_id']}
+Priority Level: {subscore_row['priority_level']}
+Rank: #{int(subscore_row['rank'])}
+
+{formula_text}
+
+Criterion-Level Summary:
+{summary_df.to_string(index=False)}
+"""
+
+    st.download_button(
+        "Download Sub-Score Logic Report",
+        report,
+        f"{subscore_row['project_id']}_subscore_logic_report.txt",
+        "text/plain",
+        key="download_subscore_logic"
+    )
+
+
+with tabs[8]:
     st.subheader("Needs Assessment and Asset Inventory")
     summary = scored.groupby(["asset_type", "condition"]).agg(
         assets=("asset_id", "count"),
@@ -1228,7 +1665,7 @@ with tabs[7]:
     fig = px.bar(summary, x="asset_type", y="assets", color="condition", title="Condition Assessment by Asset Type")
     st.plotly_chart(fig, use_container_width=True)
 
-with tabs[8]:
+with tabs[9]:
     st.subheader("LOS and Demand Forecasting")
     los_cols = ["project_id", "project_name", "asset_type", "district", "current_los", "projected_los_no_build",
                 "expected_los_after_project", "demand_growth_level", "forecast_year",
@@ -1245,7 +1682,7 @@ with tabs[8]:
                          color="priority_level", hover_name="project_name", title="Demand Growth Context")
         st.plotly_chart(fig, use_container_width=True)
 
-with tabs[9]:
+with tabs[10]:
     st.subheader("Strategic Alignment")
     alignment_cols = [
         "mtp_alignment", "lrtp_alignment", "complete_streets_alignment", "vision_zero_alignment",
@@ -1259,7 +1696,7 @@ with tabs[9]:
     fig.update_layout(xaxis_tickangle=-35)
     st.plotly_chart(fig, use_container_width=True)
 
-with tabs[10]:
+with tabs[11]:
     st.subheader("Financial and Funding Plan")
     financial_cols = ["project_id", "project_name", "estimated_capital_cost", "estimated_annual_om_cost",
                       "primary_funding_source", "funding_gap", "financial_feasibility_score", "priority_score"]
@@ -1279,7 +1716,7 @@ with tabs[10]:
     st.subheader("Funding Source Reference")
     st.dataframe(funding, use_container_width=True, hide_index=True)
 
-with tabs[11]:
+with tabs[12]:
     st.subheader("Implementation Schedule")
     joined_schedule = schedule.merge(scored[["project_id", "project_name", "priority_score", "priority_level", "cip_phase"]], on="project_id", how="inner")
     if joined_schedule.empty:
@@ -1291,7 +1728,7 @@ with tabs[11]:
         fig.update_layout(xaxis_tickangle=-35)
         st.plotly_chart(fig, use_container_width=True)
 
-with tabs[12]:
+with tabs[13]:
     st.subheader("CIP Prioritization and Budget Scenario")
     scenario = budget_scenario(scored, budget)
     funded = scenario[scenario["funding_status"] == "Funded"]
@@ -1321,7 +1758,7 @@ with tabs[12]:
 
     st.download_button("Download CIP ranked list", scenario[rank_cols].to_csv(index=False), "cip_ranked_projects.csv", "text/csv")
 
-with tabs[13]:
+with tabs[14]:
     st.subheader("Deferred Maintenance Analysis")
     cols = ["rank", "project_id", "project_name", "priority_score", "priority_level", "estimated_capital_cost", "deferred_5yr_cost", "deferred_cost_increase"]
     st.dataframe(scored[cols], use_container_width=True, hide_index=True)
@@ -1370,7 +1807,7 @@ The platform integrates asset condition, LOS and demand forecasting, strategic p
     st.text_area("Executive summary text", report, height=500)
     st.download_button("Download executive summary", report, "urbaniticsai_executive_summary.txt", "text/plain")
 
-with tabs[15]:
+with tabs[16]:
     st.subheader("Database-Style Schema and Input Requirements")
     st.dataframe(dictionary, use_container_width=True, hide_index=True)
     st.markdown("""
@@ -1384,7 +1821,7 @@ with tabs[15]:
 
 
 
-with tabs[14]:
+with tabs[15]:
     st.subheader("AI-Assisted Planning Narratives")
     st.caption("Rule-based narrative generation for explainable planning support.")
 

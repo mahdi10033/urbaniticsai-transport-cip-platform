@@ -4,6 +4,167 @@ import plotly.express as px
 
 st.set_page_config(page_title="UrbaniticsAI Transportation CIP Platform MVP v4", layout="wide")
 
+
+# -----------------------------
+# UrbaniticsAI UI polish
+# -----------------------------
+priority_colors = {
+    "Critical": "#B00020",
+    "High": "#E65100",
+    "Medium": "#F9A825",
+    "Low": "#2E7D32"
+}
+
+st.markdown("""
+<style>
+
+.main {
+    background-color: #F5F7FA;
+}
+
+.block-container {
+    padding-top: 1.2rem;
+    padding-bottom: 2rem;
+}
+
+section[data-testid="stSidebar"] {
+    background-color: #1F2A38;
+}
+
+section[data-testid="stSidebar"] * {
+    color: white !important;
+}
+
+section[data-testid="stSidebar"] .stSelectbox label,
+section[data-testid="stSidebar"] .stMultiSelect label,
+section[data-testid="stSidebar"] .stNumberInput label,
+section[data-testid="stSidebar"] .stSlider label,
+section[data-testid="stSidebar"] .stFileUploader label {
+    color: white !important;
+    font-weight: 600;
+}
+
+h1 {
+    color: #17324D;
+    font-weight: 800;
+}
+
+h2, h3 {
+    color: #274C77;
+}
+
+[data-testid="metric-container"] {
+    background-color: white;
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid #D9E2EC;
+    box-shadow: 0px 2px 10px rgba(0,0,0,0.06);
+}
+
+.stTabs [data-baseweb="tab"] {
+    font-size: 15px;
+    padding: 10px 18px;
+    font-weight: 600;
+}
+
+div[data-testid="stDataFrame"] {
+    background-color: white;
+    border-radius: 12px;
+}
+
+.urban-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 14px;
+    border: 1px solid #D9E2EC;
+    box-shadow: 0px 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 16px;
+}
+
+.urban-hero {
+    background: linear-gradient(90deg, #17324D 0%, #274C77 100%);
+    padding: 24px;
+    border-radius: 16px;
+    color: white;
+    margin-bottom: 18px;
+}
+
+.urban-hero h1 {
+    color: white;
+    margin-bottom: 0;
+}
+
+.urban-hero h3 {
+    color: #DDEAF6;
+    margin-top: 4px;
+    font-weight: 400;
+}
+
+.urban-subtle {
+    color: #5A6B7A;
+}
+
+.ai-narrative-box {
+    background-color: white;
+    padding: 22px;
+    border-radius: 14px;
+    border: 1px solid #D9E2EC;
+    box-shadow: 0px 2px 10px rgba(0,0,0,0.05);
+    line-height: 1.55;
+}
+
+.footer {
+    color: #5A6B7A;
+    font-size: 13px;
+    text-align: center;
+    padding-top: 20px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+def render_header():
+    st.markdown("""
+    <div class='urban-hero'>
+        <h1>UrbaniticsAI</h1>
+        <h3>Transportation Infrastructure Decision Intelligence Platform</h3>
+        <p style='margin-bottom:0;'>
+        Integrating transportation planning, LOS analysis, strategic alignment, funding evaluation, scenario planning, and AI-assisted decision support into one workflow.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+def render_footer():
+    st.markdown("---")
+    st.markdown(
+        "<div class='footer'>UrbaniticsAI | Transportation Infrastructure Decision Intelligence Platform</div>",
+        unsafe_allow_html=True
+    )
+
+def priority_badge_text(level):
+    return {
+        "Critical": "Critical Priority",
+        "High": "High Priority",
+        "Medium": "Medium Priority",
+        "Low": "Low Priority"
+    }.get(level, level)
+
+def highlight_priority_table(df):
+    def style_priority(val):
+        if val == "Critical":
+            return "background-color: #FFCDD2; color: #7F0000; font-weight: bold;"
+        if val == "High":
+            return "background-color: #FFE0B2; color: #8A3A00; font-weight: bold;"
+        if val == "Medium":
+            return "background-color: #FFF9C4; color: #6D5600;"
+        if val == "Low":
+            return "background-color: #C8E6C9; color: #1B5E20;"
+        return ""
+    if "priority_level" in df.columns:
+        return df.style.applymap(style_priority, subset=["priority_level"])
+    return df
+
+
 LEVEL_MAP = {"Low": 1, "Medium": 3, "High": 5}
 ALIGN_MAP = {"Weak": 1, "Moderate": 3, "Strong": 5}
 YES_NO_MAP = {"No": 1, "Yes": 5}
@@ -302,8 +463,10 @@ def generate_funding_risk(scored):
     )
 
 
-st.title("UrbaniticsAI Transportation CIP Platform MVP v4")
-st.caption("Transportation infrastructure decision intelligence for CIP planning, prioritization, funding, LOS, strategic alignment, and implementation.")
+render_header()
+
+st.success("Demo Context: Orange County, Florida public-source-informed transportation planning dataset")
+st.warning("This platform provides decision-support analysis for transportation planning and CIP evaluation. Final decisions should remain subject to agency review and policy processes.")
 
 with st.sidebar:
     st.header("Data Upload")
@@ -360,23 +523,24 @@ if priority_filter:
 
 tabs = st.tabs([
     "Executive Overview",
-    "Map Center",
+    "Priority Map",
     "Top Priorities",
     "Risk Indicators",
     "Scenario Planning",
     "Asset Inventory & Needs",
-    "LOS & Demand",
+    "Mobility Performance",
     "Strategic Alignment",
-    "Financial Plan",
+    "Capital & Funding Strategy",
     "Implementation Schedule",
-    "CIP Prioritization",
+    "Investment Prioritization",
     "Deferred Maintenance",
     "Executive Export",
-    "Data Schema",
-    "AI-Assisted Narratives"
+    "Data Governance",
+    "AI Planning Narratives"
 ])
 
 with tabs[0]:
+    st.info("This executive dashboard summarizes CIP candidate projects, priority levels, capital needs, funding gaps, O&M impacts, and key transportation risk indicators.")
     c1, c2, c3, c4, c5, c6 = st.columns(6)
     c1.metric("CIP Candidate Projects", f"{len(scored):,}")
     c2.metric("Critical/High", f"{len(scored[scored['priority_level'].isin(['Critical','High'])]):,}")
@@ -393,7 +557,7 @@ with tabs[0]:
 
     col1, col2 = st.columns(2)
     with col1:
-        fig = px.histogram(scored, x="asset_type", color="priority_level", title="Projects by Asset Type and Priority")
+        fig = px.histogram(scored, x="asset_type", color="priority_level", title="Projects by Asset Type and Priority", color_discrete_map=priority_colors)
         st.plotly_chart(fig, use_container_width=True)
     with col2:
         fig = px.histogram(scored, x="district", y="estimated_capital_cost", color="priority_level",
@@ -410,11 +574,12 @@ with tabs[1]:
 
 with tabs[2]:
     st.subheader("Top Priority Projects")
+    st.caption("Projects are ranked using the selected scenario weights. The explanation column helps support board, commission, grant, and staff-level discussions.")
     top = scored.head(15).copy()
     top["Why prioritized?"] = top.apply(project_why, axis=1)
     cols = ["rank", "project_id", "project_name", "asset_type", "district", "priority_score", "priority_level",
             "estimated_capital_cost", "estimated_annual_om_cost", "Why prioritized?"]
-    st.dataframe(top[cols], use_container_width=True, hide_index=True)
+    st.dataframe(highlight_priority_table(top[cols]), use_container_width=True, hide_index=True)
 
     fig = px.bar(top, x="project_name", y="priority_score", color="priority_level", title="Top Priority Scores")
     fig.update_layout(xaxis_tickangle=-35)
@@ -478,7 +643,7 @@ with tabs[6]:
                 "expected_los_after_project", "demand_growth_level", "forecast_year",
                 "base_year_volume_or_demand", "forecast_year_volume_or_demand", "demand_forecast_confidence",
                 "los_performance_score", "demand_need_score"]
-    st.dataframe(scored[los_cols], use_container_width=True, hide_index=True)
+    st.dataframe(highlight_priority_table(scored[los_cols]), use_container_width=True, hide_index=True)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -496,7 +661,7 @@ with tabs[7]:
         "ada_transition_plan_alignment", "resilience_alignment", "comp_plan_alignment"
     ]
     display_cols = ["project_id", "project_name", "priority_score", "strategic_alignment_score"] + alignment_cols
-    st.dataframe(scored[display_cols], use_container_width=True, hide_index=True)
+    st.dataframe(highlight_priority_table(scored[display_cols]), use_container_width=True, hide_index=True)
 
     alignment_long = scored[alignment_cols].melt(var_name="Plan/Policy", value_name="Alignment")
     fig = px.histogram(alignment_long, x="Plan/Policy", color="Alignment", title="Alignment with Adopted Plans and Policies")
@@ -507,7 +672,7 @@ with tabs[8]:
     st.subheader("Financial and Funding Plan")
     financial_cols = ["project_id", "project_name", "estimated_capital_cost", "estimated_annual_om_cost",
                       "primary_funding_source", "funding_gap", "financial_feasibility_score", "priority_score"]
-    st.dataframe(scored[financial_cols], use_container_width=True, hide_index=True)
+    st.dataframe(highlight_priority_table(scored[financial_cols]), use_container_width=True, hide_index=True)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -548,7 +713,7 @@ with tabs[10]:
 
     rank_cols = ["rank", "project_id", "project_name", "asset_type", "district", "priority_score", "priority_level",
                  "estimated_capital_cost", "estimated_annual_om_cost", "funding_gap", "cip_phase", "funding_status"]
-    st.dataframe(scenario[rank_cols], use_container_width=True, hide_index=True)
+    st.dataframe(highlight_priority_table(scenario[rank_cols]), use_container_width=True, hide_index=True)
 
     st.subheader("5-Year CIP Simulation")
     five_year = multiyear_cip(scored, annual_budget, years=5)
@@ -655,7 +820,13 @@ with tabs[-1]:
         row = scored[scored["project_name"] == selected_project].iloc[0]
         output = generate_project_justification(row)
 
-    st.text_area("Generated Narrative", output, height=250)
+    st.markdown(f"""
+    <div class='ai-narrative-box'>
+        <h3>AI-Assisted Planning Narrative</h3>
+        <p>{output}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.text_area("Editable narrative text", output, height=220)
 
     st.download_button(
         "Download Narrative",

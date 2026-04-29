@@ -1,14 +1,17 @@
 # Decision Explainability Module
 
-This version adds a dedicated Decision Explainability module.
+This version fixes three issues and adds a stable Decision Explainability module.
 
-It explains:
-- why a project ranked highly
-- main positive score drivers
-- tradeoffs and factors reducing readiness
+## Fixes
+- Sidebar dropdown/input text is now visible.
+- Priority map uses priority colors and priority score circle sizing.
+- Map table is restored below the map.
+- Decision Explainability tab is included as a visible module.
+
+## Explainability outputs
+- Main ranking drivers
+- Tradeoffs/readiness concerns
 - LOS and mobility context
-- strategic alignment
-- funding readiness
-- board-ready explanation text
-
-This supports explainable transportation capital prioritization for public agencies.
+- Strategic alignment explanation
+- Funding readiness notes
+- Exportable board-ready explanation report

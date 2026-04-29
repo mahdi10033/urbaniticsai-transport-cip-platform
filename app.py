@@ -1,121 +1,3 @@
-
-
-# =====================================================
-# DECISION EXPLAINABILITY ENGINE
-# =====================================================
-
-def explain_project_drivers(row, scored):
-    drivers = []
-    tradeoffs = []
-    policy = []
-    funding = []
-    mobility = []
-
-    if row.get("safety_risk") == "High":
-        drivers.append("High safety risk increased the project score.")
-    if row.get("crash_history_nearby") == "Yes":
-        drivers.append("Nearby crash history strengthened the safety justification.")
-    if row.get("ada_accessibility_concern") == "Yes":
-        drivers.append("ADA/accessibility concern increased the accessibility priority.")
-    if row.get("condition") == "Poor":
-        drivers.append("Poor asset condition increased the needs-assessment score.")
-    if row.get("community_concern_level") == "High":
-        drivers.append("Strong agency-recorded community concern increased the public concern component.")
-    if row.get("equity_priority_area") == "Yes":
-        drivers.append("Location in an equity priority area increased the equity component.")
-    if row.get("projected_los_no_build") in ["E", "F"]:
-        drivers.append(f"Projected no-build LOS of {row.get('projected_los_no_build')} increased the mobility/performance need.")
-    if row.get("demand_growth_level") == "High":
-        drivers.append("High demand-growth context increased the future need score.")
-    if row.get("strategic_alignment_score", 0) >= 70:
-        drivers.append("Strong strategic alignment increased the policy consistency score.")
-
-    if not drivers:
-        drivers.append("The project is supported by a balanced mix of planning, asset, funding, and policy factors.")
-
-    if row.get("estimated_capital_cost", 0) >= scored["estimated_capital_cost"].quantile(0.75):
-        tradeoffs.append("High capital cost may reduce near-term implementability under constrained budgets.")
-    if row.get("funding_gap", 0) >= scored["funding_gap"].quantile(0.75):
-        tradeoffs.append("Large funding gap may reduce financial readiness.")
-    if row.get("financial_feasibility_score", 100) < 45:
-        tradeoffs.append("Lower financial feasibility score reduced the final priority score.")
-    if row.get("estimated_annual_om_cost", 0) >= scored["estimated_annual_om_cost"].quantile(0.75):
-        tradeoffs.append("Higher annual operating and maintenance impact may create future fiscal pressure.")
-    if row.get("cip_phase") == "Long-term 8-15 years":
-        tradeoffs.append("Long-term CIP phase may reduce immediate implementation readiness.")
-
-    if not tradeoffs:
-        tradeoffs.append("No major negative tradeoff was identified from the available dataset.")
-
-    alignments = [
-        ("mtp_alignment", "Metropolitan Transportation Plan"),
-        ("lrtp_alignment", "Long Range Transportation Plan"),
-        ("complete_streets_alignment", "Complete Streets"),
-        ("vision_zero_alignment", "Vision Zero / safety policy"),
-        ("ada_transition_plan_alignment", "ADA Transition Plan"),
-        ("resilience_alignment", "resilience strategy"),
-        ("comp_plan_alignment", "comprehensive plan"),
-    ]
-
-    for col, label in alignments:
-        if row.get(col) == "Strong":
-            policy.append(f"Strong alignment with {label}.")
-
-    if not policy:
-        policy.append("No strong strategic alignment category is currently flagged. Agency review may add local plan references.")
-
-    mobility.append(f"Current LOS: {row.get('current_los')}.")
-    mobility.append(f"Projected no-build LOS: {row.get('projected_los_no_build')}.")
-    mobility.append(f"Expected LOS after project: {row.get('expected_los_after_project')}.")
-
-    if row.get("primary_funding_source") and row.get("primary_funding_source") != "Unfunded":
-        funding.append(f"Primary funding source identified: {row.get('primary_funding_source')}.")
-    else:
-        funding.append("No clear primary funding source is identified.")
-
-    funding.append(f"Estimated funding gap: ${row.get('funding_gap', 0):,.0f}.")
-    funding.append(f"Estimated annual O&M impact: ${row.get('estimated_annual_om_cost', 0):,.0f}.")
-
-    return drivers, tradeoffs, policy, mobility, funding
-
-
-def generate_decision_explainability_report(row, drivers, tradeoffs, policy, mobility, funding):
-    drivers_text = "\\n".join([f"- {x}" for x in drivers])
-    tradeoffs_text = "\\n".join([f"- {x}" for x in tradeoffs])
-    policy_text = "\\n".join([f"- {x}" for x in policy])
-    mobility_text = "\\n".join([f"- {x}" for x in mobility])
-    funding_text = "\\n".join([f"- {x}" for x in funding])
-
-    return f"""Decision Explainability Report
-
-Project: {row['project_name']}
-Project ID: {row['project_id']}
-Priority Score: {row['priority_score']}
-Priority Level: {row['priority_level']}
-Current Rank: #{int(row['rank'])}
-Estimated Capital Cost: ${row['estimated_capital_cost']:,.0f}
-Funding Gap: ${row['funding_gap']:,.0f}
-
-Why this project ranked where it did
-{drivers_text}
-
-Tradeoffs and factors reducing readiness
-{tradeoffs_text}
-
-Mobility and LOS context
-{mobility_text}
-
-Strategic alignment
-{policy_text}
-
-Funding readiness
-{funding_text}
-
-AI-assisted explanation
-This project ranking reflects the selected criteria weights and available project evidence. The result should be interpreted as decision support for agency review, not as an automatic final funding decision.
-"""
-
-
 import pandas as pd
 import streamlit as st
 import plotly.express as px
@@ -149,9 +31,7 @@ section[data-testid="stSidebar"] {
     background-color: #1F2A38;
 }
 
-section[data-testid="stSidebar"] * {
-    color: white !important;
-}
+
 
 section[data-testid="stSidebar"] .stSelectbox label,
 section[data-testid="stSidebar"] .stMultiSelect label,
@@ -236,6 +116,56 @@ div[data-testid="stDataFrame"] {
     font-size: 13px;
     text-align: center;
     padding-top: 20px;
+}
+
+
+
+/* ===== Sidebar visibility fix ===== */
+section[data-testid="stSidebar"] {
+    background-color: #1F2A38;
+}
+
+/* Sidebar section titles and labels only */
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] h4,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] label {
+    color: white !important;
+}
+
+/* Input text should stay dark and readable */
+section[data-testid="stSidebar"] input {
+    color: #111827 !important;
+    background-color: white !important;
+}
+
+/* Selectbox / multiselect selected text */
+section[data-testid="stSidebar"] div[data-baseweb="select"] span {
+    color: #111827 !important;
+}
+
+/* Dropdown menu text */
+div[data-baseweb="popover"] span,
+div[data-baseweb="menu"] span,
+ul[role="listbox"] li {
+    color: #111827 !important;
+}
+
+/* Multiselect selected tags */
+section[data-testid="stSidebar"] div[data-baseweb="tag"] span {
+    color: #111827 !important;
+}
+
+/* Number input buttons */
+section[data-testid="stSidebar"] button {
+    color: #111827 !important;
+}
+
+/* Help / uploader small text */
+section[data-testid="stSidebar"] small {
+    color: #DDEAF6 !important;
 }
 
 </style>
@@ -598,6 +528,127 @@ def generate_funding_risk(scored):
     )
 
 
+
+# =====================================================
+# DECISION EXPLAINABILITY ENGINE
+# =====================================================
+
+def explain_project_drivers(row, scored):
+    drivers = []
+    tradeoffs = []
+    policy = []
+    funding = []
+    mobility = []
+
+    if row.get("safety_risk") == "High":
+        drivers.append("High safety risk increased the project score.")
+    if row.get("crash_history_nearby") == "Yes":
+        drivers.append("Nearby crash history strengthened the safety justification.")
+    if row.get("ada_accessibility_concern") == "Yes":
+        drivers.append("ADA/accessibility concern increased the accessibility priority.")
+    if row.get("condition") == "Poor":
+        drivers.append("Poor asset condition increased the needs-assessment score.")
+    if row.get("community_concern_level") == "High":
+        drivers.append("Strong agency-recorded community concern increased the public concern component.")
+    if row.get("equity_priority_area") == "Yes":
+        drivers.append("Location in an equity priority area increased the equity component.")
+    if row.get("projected_los_no_build") in ["E", "F"]:
+        drivers.append(f"Projected no-build LOS of {row.get('projected_los_no_build')} increased the mobility/performance need.")
+    if row.get("demand_growth_level") == "High":
+        drivers.append("High demand-growth context increased the future need score.")
+    if row.get("strategic_alignment_score", 0) >= 70:
+        drivers.append("Strong strategic alignment increased the policy consistency score.")
+
+    if not drivers:
+        drivers.append("The project is supported by a balanced mix of planning, asset, funding, and policy factors.")
+
+    try:
+        if row.get("estimated_capital_cost", 0) >= scored["estimated_capital_cost"].quantile(0.75):
+            tradeoffs.append("High capital cost may reduce near-term implementability under constrained budgets.")
+        if row.get("funding_gap", 0) >= scored["funding_gap"].quantile(0.75):
+            tradeoffs.append("Large funding gap may reduce financial readiness.")
+        if row.get("estimated_annual_om_cost", 0) >= scored["estimated_annual_om_cost"].quantile(0.75):
+            tradeoffs.append("Higher annual operating and maintenance impact may create future fiscal pressure.")
+    except Exception:
+        pass
+
+    if row.get("financial_feasibility_score", 100) < 45:
+        tradeoffs.append("Lower financial feasibility score reduced the final priority score.")
+    if row.get("cip_phase") == "Long-term 8-15 years":
+        tradeoffs.append("Long-term CIP phase may reduce immediate implementation readiness.")
+
+    if not tradeoffs:
+        tradeoffs.append("No major negative tradeoff was identified from the available dataset.")
+
+    alignments = [
+        ("mtp_alignment", "Metropolitan Transportation Plan"),
+        ("lrtp_alignment", "Long Range Transportation Plan"),
+        ("complete_streets_alignment", "Complete Streets"),
+        ("vision_zero_alignment", "Vision Zero / safety policy"),
+        ("ada_transition_plan_alignment", "ADA Transition Plan"),
+        ("resilience_alignment", "resilience strategy"),
+        ("comp_plan_alignment", "comprehensive plan"),
+    ]
+
+    for col, label in alignments:
+        if row.get(col) == "Strong":
+            policy.append(f"Strong alignment with {label}.")
+
+    if not policy:
+        policy.append("No strong strategic alignment category is currently flagged. Agency review may add local plan references.")
+
+    mobility.append(f"Current LOS: {row.get('current_los')}.")
+    mobility.append(f"Projected no-build LOS: {row.get('projected_los_no_build')}.")
+    mobility.append(f"Expected LOS after project: {row.get('expected_los_after_project')}.")
+
+    if row.get("primary_funding_source") and row.get("primary_funding_source") != "Unfunded":
+        funding.append(f"Primary funding source identified: {row.get('primary_funding_source')}.")
+    else:
+        funding.append("No clear primary funding source is identified.")
+
+    funding.append(f"Estimated funding gap: ${row.get('funding_gap', 0):,.0f}.")
+    funding.append(f"Estimated annual O&M impact: ${row.get('estimated_annual_om_cost', 0):,.0f}.")
+
+    return drivers, tradeoffs, policy, mobility, funding
+
+
+def generate_decision_explainability_report(row, drivers, tradeoffs, policy, mobility, funding):
+    drivers_text = "\\n".join([f"- {x}" for x in drivers])
+    tradeoffs_text = "\\n".join([f"- {x}" for x in tradeoffs])
+    policy_text = "\\n".join([f"- {x}" for x in policy])
+    mobility_text = "\\n".join([f"- {x}" for x in mobility])
+    funding_text = "\\n".join([f"- {x}" for x in funding])
+
+    return f"""Decision Explainability Report
+
+Project: {row['project_name']}
+Project ID: {row['project_id']}
+Priority Score: {row['priority_score']}
+Priority Level: {row['priority_level']}
+Current Rank: #{int(row['rank'])}
+Estimated Capital Cost: ${row['estimated_capital_cost']:,.0f}
+Funding Gap: ${row['funding_gap']:,.0f}
+
+Why this project ranked where it did
+{drivers_text}
+
+Tradeoffs and factors reducing readiness
+{tradeoffs_text}
+
+Mobility and LOS context
+{mobility_text}
+
+Strategic alignment
+{policy_text}
+
+Funding readiness
+{funding_text}
+
+AI-assisted explanation
+This project ranking reflects the selected criteria weights and available project evidence. The result should be interpreted as decision support for agency review, not as an automatic final funding decision.
+"""
+
+
 render_header()
 
 st.success("Demo Context: Orange County, Florida public-source-informed transportation planning dataset")
@@ -662,6 +713,7 @@ tabs = st.tabs([
     "Top Priorities",
     "Risk Indicators",
     "Scenario Planning",
+    "Decision Explainability",
     "Asset Inventory & Needs",
     "Mobility Performance",
     "Strategic Alignment",
@@ -669,9 +721,8 @@ tabs = st.tabs([
     "Implementation Schedule",
     "Investment Prioritization",
     "Deferred Maintenance",
-    "Executive Export",
-    "Data Governance",
-    "AI Planning Narratives"
+    "AI Planning Narratives",
+    "Data Governance"
 ])
 
 with tabs[0]:
@@ -699,13 +750,61 @@ with tabs[0]:
                            histfunc="sum", title="Capital Need by District")
         st.plotly_chart(fig, use_container_width=True)
 
+
 with tabs[1]:
-    st.subheader("Map-Centered Project View")
-    map_df = scored.rename(columns={"latitude": "lat", "longitude": "lon"})
-    st.map(map_df[["lat", "lon"]])
-    st.caption("MVP map. Production version should use ArcGIS, Mapbox, or Folium with priority-colored markers and layer controls.")
-    st.dataframe(scored[["rank", "project_id", "project_name", "asset_type", "district", "priority_score", "priority_level", "estimated_capital_cost"]],
-                 use_container_width=True, hide_index=True)
+    st.subheader("Priority Map")
+    st.caption("Color represents priority level. Circle size represents priority score. The table below keeps the ranked project list visible for planners and managers.")
+
+    fig = px.scatter_mapbox(
+        scored,
+        lat="latitude",
+        lon="longitude",
+        color="priority_level",
+        size="priority_score",
+        hover_name="project_name",
+        hover_data={
+            "asset_type": True,
+            "district": True,
+            "priority_score": True,
+            "priority_level": True,
+            "estimated_capital_cost": ":,.0f",
+            "latitude": False,
+            "longitude": False
+        },
+        color_discrete_map=priority_colors,
+        size_max=32,
+        zoom=8,
+        height=650
+    )
+
+    fig.update_layout(
+        mapbox_style="carto-positron",
+        margin={"r": 0, "t": 0, "l": 0, "b": 0},
+        legend_title_text="Priority Level"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+    st.subheader("Mapped Project List")
+
+    map_table_cols = [
+        "rank",
+        "project_id",
+        "project_name",
+        "asset_type",
+        "district",
+        "priority_score",
+        "priority_level",
+        "estimated_capital_cost"
+    ]
+
+    st.dataframe(
+        scored[map_table_cols],
+        use_container_width=True,
+        hide_index=True
+    )
+
 
 with tabs[2]:
     st.subheader("Top Priority Projects")
@@ -760,7 +859,69 @@ with tabs[4]:
     fig.update_layout(xaxis_tickangle=-45)
     st.plotly_chart(fig, use_container_width=True)
 
+
 with tabs[5]:
+    st.subheader("Decision Explainability")
+    st.caption("Explain why a project ranked where it did, including score drivers, tradeoffs, LOS context, policy alignment, and funding readiness.")
+
+    selected_explain_project = st.selectbox(
+        "Select a project to explain",
+        scored["project_name"].tolist(),
+        key="decision_explainability_project"
+    )
+
+    explain_row = scored[scored["project_name"] == selected_explain_project].iloc[0]
+    drivers, tradeoffs, policy, mobility, funding = explain_project_drivers(explain_row, scored)
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Priority Score", f"{explain_row['priority_score']}")
+    c2.metric("Priority Level", f"{explain_row['priority_level']}")
+    c3.metric("Current Rank", f"#{int(explain_row['rank'])}")
+    c4.metric("Funding Gap", f"${explain_row['funding_gap']:,.0f}")
+
+    st.markdown("### Main Drivers of Ranking")
+    for item in drivers:
+        st.success(item)
+
+    st.markdown("### Tradeoffs / Factors Reducing Readiness")
+    for item in tradeoffs:
+        st.warning(item)
+
+    left, right = st.columns(2)
+
+    with left:
+        st.markdown("### Mobility and LOS Context")
+        for item in mobility:
+            st.info(item)
+
+        st.markdown("### Funding Readiness")
+        for item in funding:
+            st.info(item)
+
+    with right:
+        st.markdown("### Strategic Alignment")
+        for item in policy:
+            st.info(item)
+
+        st.markdown("### Scenario Sensitivity")
+        st.info("Current version explains the selected scenario. Next version can compare ranks across all weighting scenarios.")
+
+    st.markdown("### Board-Ready Explanation")
+    explain_report = generate_decision_explainability_report(explain_row, drivers, tradeoffs, policy, mobility, funding)
+    st.text_area("Editable explanation report", explain_report, height=420)
+
+    st.download_button(
+        "Download Decision Explainability Report",
+        explain_report,
+        f"{explain_row['project_id']}_decision_explainability_report.txt",
+        "text/plain",
+        key="download_decision_explainability"
+    )
+
+    st.info("This module supports transparent human decision-making. It explains the score, but does not make final funding decisions.")
+
+
+with tabs[6]:
     st.subheader("Needs Assessment and Asset Inventory")
     summary = scored.groupby(["asset_type", "condition"]).agg(
         assets=("asset_id", "count"),
@@ -772,7 +933,7 @@ with tabs[5]:
     fig = px.bar(summary, x="asset_type", y="assets", color="condition", title="Condition Assessment by Asset Type")
     st.plotly_chart(fig, use_container_width=True)
 
-with tabs[6]:
+with tabs[7]:
     st.subheader("LOS and Demand Forecasting")
     los_cols = ["project_id", "project_name", "asset_type", "district", "current_los", "projected_los_no_build",
                 "expected_los_after_project", "demand_growth_level", "forecast_year",
@@ -789,7 +950,7 @@ with tabs[6]:
                          color="priority_level", hover_name="project_name", title="Demand Growth Context")
         st.plotly_chart(fig, use_container_width=True)
 
-with tabs[7]:
+with tabs[8]:
     st.subheader("Strategic Alignment")
     alignment_cols = [
         "mtp_alignment", "lrtp_alignment", "complete_streets_alignment", "vision_zero_alignment",
@@ -803,7 +964,7 @@ with tabs[7]:
     fig.update_layout(xaxis_tickangle=-35)
     st.plotly_chart(fig, use_container_width=True)
 
-with tabs[8]:
+with tabs[9]:
     st.subheader("Financial and Funding Plan")
     financial_cols = ["project_id", "project_name", "estimated_capital_cost", "estimated_annual_om_cost",
                       "primary_funding_source", "funding_gap", "financial_feasibility_score", "priority_score"]
@@ -823,7 +984,7 @@ with tabs[8]:
     st.subheader("Funding Source Reference")
     st.dataframe(funding, use_container_width=True, hide_index=True)
 
-with tabs[9]:
+with tabs[10]:
     st.subheader("Implementation Schedule")
     joined_schedule = schedule.merge(scored[["project_id", "project_name", "priority_score", "priority_level", "cip_phase"]], on="project_id", how="inner")
     if joined_schedule.empty:
@@ -835,7 +996,7 @@ with tabs[9]:
         fig.update_layout(xaxis_tickangle=-35)
         st.plotly_chart(fig, use_container_width=True)
 
-with tabs[10]:
+with tabs[11]:
     st.subheader("CIP Prioritization and Budget Scenario")
     scenario = budget_scenario(scored, budget)
     funded = scenario[scenario["funding_status"] == "Funded"]
@@ -865,7 +1026,7 @@ with tabs[10]:
 
     st.download_button("Download CIP ranked list", scenario[rank_cols].to_csv(index=False), "cip_ranked_projects.csv", "text/csv")
 
-with tabs[11]:
+with tabs[12]:
     st.subheader("Deferred Maintenance Analysis")
     cols = ["rank", "project_id", "project_name", "priority_score", "priority_level", "estimated_capital_cost", "deferred_5yr_cost", "deferred_cost_increase"]
     st.dataframe(scored[cols], use_container_width=True, hide_index=True)
@@ -914,7 +1075,7 @@ The platform integrates asset condition, LOS and demand forecasting, strategic p
     st.text_area("Executive summary text", report, height=500)
     st.download_button("Download executive summary", report, "urbaniticsai_executive_summary.txt", "text/plain")
 
-with tabs[13]:
+with tabs[14]:
     st.subheader("Database-Style Schema and Input Requirements")
     st.dataframe(dictionary, use_container_width=True, hide_index=True)
     st.markdown("""
@@ -928,7 +1089,7 @@ with tabs[13]:
 
 
 
-with tabs[-1]:
+with tabs[13]:
     st.subheader("AI-Assisted Planning Narratives")
     st.caption("Rule-based narrative generation for explainable planning support.")
 
@@ -973,76 +1134,3 @@ with tabs[-1]:
     st.info(
         "This feature provides AI-assisted planning support narratives and does not make automatic final decisions."
     )
-
-
-
-
-# =====================================================
-# DECISION EXPLAINABILITY MODULE
-# =====================================================
-
-try:
-    # The Decision Explainability tab is inserted immediately before the AI tab or data governance tab.
-    # This fallback uses the second-to-last tab in v7-style packages.
-    with tabs[-2]:
-        st.subheader("Decision Explainability")
-        st.caption("Explain why a project ranked where it did, including score drivers, tradeoffs, LOS context, policy alignment, and funding readiness.")
-
-        selected_explain_project = st.selectbox(
-            "Select a project to explain",
-            scored["project_name"].tolist(),
-            key="decision_explainability_project"
-        )
-
-        explain_row = scored[scored["project_name"] == selected_explain_project].iloc[0]
-        drivers, tradeoffs, policy, mobility, funding = explain_project_drivers(explain_row, scored)
-
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Priority Score", f"{explain_row['priority_score']}")
-        c2.metric("Priority Level", f"{explain_row['priority_level']}")
-        c3.metric("Current Rank", f"#{int(explain_row['rank'])}")
-        c4.metric("Funding Gap", f"${explain_row['funding_gap']:,.0f}")
-
-        st.markdown("### Main Drivers of Ranking")
-        for item in drivers:
-            st.success(item)
-
-        st.markdown("### Tradeoffs / Factors Reducing Readiness")
-        for item in tradeoffs:
-            st.warning(item)
-
-        left, right = st.columns(2)
-
-        with left:
-            st.markdown("### Mobility and LOS Context")
-            for item in mobility:
-                st.info(item)
-
-            st.markdown("### Funding Readiness")
-            for item in funding:
-                st.info(item)
-
-        with right:
-            st.markdown("### Strategic Alignment")
-            for item in policy:
-                st.info(item)
-
-            st.markdown("### Scenario Sensitivity")
-            st.caption("Scenario sensitivity can be expanded in the next version by comparing rank changes under each weighting scenario.")
-            st.info("Current scenario ranking shown above. Future versions can compare Balanced, Safety First, ADA First, Financial First, and Strategic Alignment First rankings.")
-
-        st.markdown("### Board-Ready Explanation")
-        explain_report = generate_decision_explainability_report(explain_row, drivers, tradeoffs, policy, mobility, funding)
-        st.text_area("Editable explanation report", explain_report, height=420)
-
-        st.download_button(
-            "Download Decision Explainability Report",
-            explain_report,
-            f"{explain_row['project_id']}_decision_explainability_report.txt",
-            "text/plain",
-            key="download_decision_explainability"
-        )
-
-        st.info("This module supports transparent human decision-making. It explains the score, but does not make final funding decisions.")
-except Exception as e:
-    st.warning(f"Decision Explainability module could not be loaded: {e}")

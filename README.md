@@ -97,14 +97,12 @@ This version adds:
 These are lightweight explainable AI-assisted planning support features that do not require external APIs.
 
 
-## v8 update: Decision Explainability
+## v9 fixed update
 
-This version adds a dedicated Decision Explainability module that helps agencies understand and communicate why a project ranked where it did.
+This version fixes:
+- sidebar dropdown and filter visibility
+- priority map colors and marker sizes
+- mapped project table below map
+- visible Decision Explainability module
 
-The module produces:
-- score drivers
-- readiness tradeoffs
-- LOS and mobility context
-- policy alignment notes
-- funding readiness notes
-- exportable board-ready explanation text
+The Decision Explainability module explains why each project ranked where it did and supports exportable board-ready justification text.

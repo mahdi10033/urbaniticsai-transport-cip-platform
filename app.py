@@ -593,6 +593,7 @@ with tabs[1]:
     }
 
     fig = px.scatter_mapbox(
+
         scored,
 
         lat="latitude",
@@ -621,6 +622,7 @@ with tabs[1]:
     )
 
     fig.update_layout(
+
         mapbox_style="carto-positron",
 
         margin={
@@ -634,6 +636,29 @@ with tabs[1]:
     st.plotly_chart(
         fig,
         use_container_width=True
+    )
+
+    st.markdown("---")
+
+    st.subheader("Mapped Project List")
+
+    st.dataframe(
+
+        scored[[
+
+            "rank",
+            "project_id",
+            "project_name",
+            "asset_type",
+            "district",
+            "priority_score",
+            "priority_level",
+            "estimated_capital_cost"
+
+        ]],
+
+        use_container_width=True,
+        hide_index=True
     )
 
 with tabs[2]:

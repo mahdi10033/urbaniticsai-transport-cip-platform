@@ -708,6 +708,113 @@ This project ranking reflects the selected criteria weights and available projec
 """
 
 
+
+# =====================================================
+# TRANSPARENT SCORE CONTRIBUTION ENGINE
+# =====================================================
+
+def build_score_breakdown(row, weights):
+    breakdown_items = [
+        {
+            "Criterion": "Safety Risk",
+            "Component Score (0-100)": row.get("safety_risk_score", 0),
+            "Weight (%)": weights.get("safety_risk", 0),
+            "Evidence / Input": f"Safety risk: {row.get('safety_risk')}; Crash history nearby: {row.get('crash_history_nearby')}; Near school: {row.get('near_school')}"
+        },
+        {
+            "Criterion": "ADA & Accessibility",
+            "Component Score (0-100)": row.get("ada_accessibility_score", 0),
+            "Weight (%)": weights.get("ada_accessibility", 0),
+            "Evidence / Input": f"ADA/accessibility concern: {row.get('ada_accessibility_concern')}"
+        },
+        {
+            "Criterion": "Asset Condition",
+            "Component Score (0-100)": row.get("asset_condition_score", 0),
+            "Weight (%)": weights.get("asset_condition", 0),
+            "Evidence / Input": f"Asset condition: {row.get('condition')}"
+        },
+        {
+            "Criterion": "LOS Performance",
+            "Component Score (0-100)": row.get("los_performance_score", 0),
+            "Weight (%)": weights.get("los_performance", 0),
+            "Evidence / Input": f"Current LOS: {row.get('current_los')}; No-build LOS: {row.get('projected_los_no_build')}; Expected after project: {row.get('expected_los_after_project')}"
+        },
+        {
+            "Criterion": "Demand Need",
+            "Component Score (0-100)": row.get("demand_need_score", 0),
+            "Weight (%)": weights.get("demand_need", 0),
+            "Evidence / Input": f"Demand growth level: {row.get('demand_growth_level')}; Forecast demand: {row.get('forecast_year_volume_or_demand')}"
+        },
+        {
+            "Criterion": "Strategic Alignment",
+            "Component Score (0-100)": row.get("strategic_alignment_score", 0),
+            "Weight (%)": weights.get("strategic_alignment", 0),
+            "Evidence / Input": (
+                f"MTP: {row.get('mtp_alignment')}; LRTP: {row.get('lrtp_alignment')}; "
+                f"Complete Streets: {row.get('complete_streets_alignment')}; Vision Zero: {row.get('vision_zero_alignment')}; "
+                f"ADA Plan: {row.get('ada_transition_plan_alignment')}; Resilience: {row.get('resilience_alignment')}; "
+                f"Comprehensive Plan: {row.get('comp_plan_alignment')}"
+            )
+        },
+        {
+            "Criterion": "Financial Feasibility",
+            "Component Score (0-100)": row.get("financial_feasibility_score", 0),
+            "Weight (%)": weights.get("financial_feasibility", 0),
+            "Evidence / Input": f"Capital cost: ${row.get('estimated_capital_cost', 0):,.0f}; Funding gap: ${row.get('funding_gap', 0):,.0f}; Annual O&M: ${row.get('estimated_annual_om_cost', 0):,.0f}"
+        },
+        {
+            "Criterion": "Equity Impact",
+            "Component Score (0-100)": row.get("equity_impact_score", 0),
+            "Weight (%)": weights.get("equity_impact", 0),
+            "Evidence / Input": f"Equity priority area: {row.get('equity_priority_area')}"
+        },
+        {
+            "Criterion": "Community Concern",
+            "Component Score (0-100)": row.get("community_concern_score", 0),
+            "Weight (%)": weights.get("community_concern", 0),
+            "Evidence / Input": f"Community concern: {row.get('community_concern_level')}; Complaints: {row.get('citizen_complaints_count')}"
+        },
+    ]
+
+    df = pd.DataFrame(breakdown_items)
+    df["Component Score (0-100)"] = pd.to_numeric(df["Component Score (0-100)"], errors="coerce").fillna(0).round(1)
+    df["Weight (%)"] = pd.to_numeric(df["Weight (%)"], errors="coerce").fillna(0).round(1)
+    df["Weighted Contribution"] = (df["Component Score (0-100)"] * df["Weight (%)"] / 100).round(2)
+    df["Maximum Possible Contribution"] = df["Weight (%)"]
+    return df
+
+
+def generate_score_formula_text(row, breakdown_df):
+    lines = []
+    for _, r in breakdown_df.iterrows():
+        lines.append(
+            f"{r['Criterion']}: {r['Component Score (0-100)']:.1f} × {r['Weight (%)']:.1f}% = {r['Weighted Contribution']:.2f}"
+        )
+
+    calculated_score = breakdown_df["Weighted Contribution"].sum()
+
+    return (
+        "Priority Score Calculation\n\n"
+        + "\n".join(lines)
+        + f"\n\nFinal Priority Score = {calculated_score:.2f}"
+        + f"\nDisplayed Priority Score = {row.get('priority_score')}"
+    )
+
+
+def component_scoring_explanations():
+    return {
+        "Safety Risk": "Safety uses safety risk, crash history, school proximity, and transit context. Higher-risk conditions increase the component score.",
+        "ADA & Accessibility": "ADA/accessibility is higher when the project addresses accessibility barriers, sidewalk gaps, curb ramps, or transit access deficiencies.",
+        "Asset Condition": "Asset condition converts Good/Fair/Poor into a numeric needs score. Poorer condition increases priority.",
+        "LOS Performance": "LOS performance uses current LOS, projected no-build LOS, and expected LOS after the project. Poorer no-build LOS and stronger improvement increase the score.",
+        "Demand Need": "Demand need uses growth level, forecast confidence, and relative forecast demand. Higher growth and demand increase priority.",
+        "Strategic Alignment": "Strategic alignment converts plan consistency indicators, such as Vision Zero, Complete Streets, MTP/LRTP, ADA, resilience, and comprehensive plan alignment into a numeric score.",
+        "Financial Feasibility": "Financial feasibility is higher when the funding gap is smaller and annual O&M burden is more manageable.",
+        "Equity Impact": "Equity impact is higher when the project serves an identified equity priority area.",
+        "Community Concern": "Community concern uses agency-recorded concern level and complaint count."
+    }
+
+
 render_header()
 
 st.success("Demo Context: Orange County, Florida public-source-informed transportation planning dataset")
@@ -811,9 +918,10 @@ tabs = st.tabs([
     "Executive Overview",
     "Priority Map",
     "Top Priorities",
-    "Portfolio Risk Indicators",
+    "Risk Indicators",
     "Scenario Planning",
     "Decision Explainability",
+    "Score Breakdown",
     "Asset Inventory & Needs",
     "Mobility Performance",
     "Strategic Alignment",
@@ -920,7 +1028,7 @@ with tabs[2]:
     st.plotly_chart(fig, use_container_width=True)
 
 with tabs[3]:
-    st.subheader("Portfolio Risk Indicators")
+    st.subheader("Risk Indicators")
     risk = risk_indicators(scored)
     risk_df = pd.DataFrame({"Risk Indicator": list(risk.keys()), "Count": list(risk.values())})
     st.dataframe(risk_df, use_container_width=True, hide_index=True)
@@ -1006,6 +1114,15 @@ with tabs[5]:
         st.markdown("### Scenario Sensitivity")
         st.info("Current version explains the selected scenario. Next version can compare ranks across all weighting scenarios.")
 
+    
+    st.markdown("### Numeric Score Contribution Summary")
+    mini_breakdown = build_score_breakdown(explain_row, weights)
+    st.dataframe(
+        mini_breakdown[["Criterion", "Component Score (0-100)", "Weight (%)", "Weighted Contribution"]],
+        use_container_width=True,
+        hide_index=True
+    )
+
     st.markdown("### Board-Ready Explanation")
     explain_report = generate_decision_explainability_report(explain_row, drivers, tradeoffs, policy, mobility, funding)
     st.text_area("Editable explanation report", explain_report, height=420)
@@ -1021,7 +1138,85 @@ with tabs[5]:
     st.info("This module supports transparent human decision-making. It explains the score, but does not make final funding decisions.")
 
 
+
 with tabs[6]:
+    st.subheader("Transparent Score Breakdown")
+    st.caption("This module shows exactly how each criterion contributes numeric points to the final priority score.")
+
+    selected_score_project = st.selectbox(
+        "Select a project for score breakdown",
+        scored["project_name"].tolist(),
+        key="score_breakdown_project"
+    )
+
+    score_row = scored[scored["project_name"] == selected_score_project].iloc[0]
+    breakdown_df = build_score_breakdown(score_row, weights)
+    formula_text = generate_score_formula_text(score_row, breakdown_df)
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Final Priority Score", f"{score_row['priority_score']}")
+    c2.metric("Calculated Score", f"{breakdown_df['Weighted Contribution'].sum():.2f}")
+    c3.metric("Priority Level", f"{score_row['priority_level']}")
+    c4.metric("Current Rank", f"#{int(score_row['rank'])}")
+
+    st.markdown("### Weighted Contribution Table")
+    st.dataframe(
+        breakdown_df[
+            [
+                "Criterion",
+                "Component Score (0-100)",
+                "Weight (%)",
+                "Weighted Contribution",
+                "Maximum Possible Contribution",
+                "Evidence / Input"
+            ]
+        ],
+        use_container_width=True,
+        hide_index=True
+    )
+
+    st.markdown("### Score Contribution Chart")
+    fig = px.bar(
+        breakdown_df,
+        x="Criterion",
+        y="Weighted Contribution",
+        title="Point Contribution to Final Priority Score",
+        text="Weighted Contribution"
+    )
+    fig.update_layout(xaxis_tickangle=-35)
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("### Formula")
+    st.code(formula_text)
+
+    st.markdown("### How Qualitative Inputs Become Scores")
+    for criterion, explanation in component_scoring_explanations().items():
+        with st.expander(criterion):
+            st.write(explanation)
+
+    score_report = f"""Transparent Score Breakdown Report
+
+Project: {score_row['project_name']}
+Project ID: {score_row['project_id']}
+Priority Level: {score_row['priority_level']}
+Rank: #{int(score_row['rank'])}
+
+{formula_text}
+
+Detailed Contributions:
+{breakdown_df.to_string(index=False)}
+"""
+
+    st.download_button(
+        "Download Score Breakdown Report",
+        score_report,
+        f"{score_row['project_id']}_score_breakdown_report.txt",
+        "text/plain",
+        key="download_score_breakdown"
+    )
+
+
+with tabs[7]:
     st.subheader("Needs Assessment and Asset Inventory")
     summary = scored.groupby(["asset_type", "condition"]).agg(
         assets=("asset_id", "count"),
@@ -1033,7 +1228,7 @@ with tabs[6]:
     fig = px.bar(summary, x="asset_type", y="assets", color="condition", title="Condition Assessment by Asset Type")
     st.plotly_chart(fig, use_container_width=True)
 
-with tabs[7]:
+with tabs[8]:
     st.subheader("LOS and Demand Forecasting")
     los_cols = ["project_id", "project_name", "asset_type", "district", "current_los", "projected_los_no_build",
                 "expected_los_after_project", "demand_growth_level", "forecast_year",
@@ -1050,7 +1245,7 @@ with tabs[7]:
                          color="priority_level", hover_name="project_name", title="Demand Growth Context")
         st.plotly_chart(fig, use_container_width=True)
 
-with tabs[8]:
+with tabs[9]:
     st.subheader("Strategic Alignment")
     alignment_cols = [
         "mtp_alignment", "lrtp_alignment", "complete_streets_alignment", "vision_zero_alignment",
@@ -1064,7 +1259,7 @@ with tabs[8]:
     fig.update_layout(xaxis_tickangle=-35)
     st.plotly_chart(fig, use_container_width=True)
 
-with tabs[9]:
+with tabs[10]:
     st.subheader("Financial and Funding Plan")
     financial_cols = ["project_id", "project_name", "estimated_capital_cost", "estimated_annual_om_cost",
                       "primary_funding_source", "funding_gap", "financial_feasibility_score", "priority_score"]
@@ -1084,7 +1279,7 @@ with tabs[9]:
     st.subheader("Funding Source Reference")
     st.dataframe(funding, use_container_width=True, hide_index=True)
 
-with tabs[10]:
+with tabs[11]:
     st.subheader("Implementation Schedule")
     joined_schedule = schedule.merge(scored[["project_id", "project_name", "priority_score", "priority_level", "cip_phase"]], on="project_id", how="inner")
     if joined_schedule.empty:
@@ -1096,7 +1291,7 @@ with tabs[10]:
         fig.update_layout(xaxis_tickangle=-35)
         st.plotly_chart(fig, use_container_width=True)
 
-with tabs[11]:
+with tabs[12]:
     st.subheader("CIP Prioritization and Budget Scenario")
     scenario = budget_scenario(scored, budget)
     funded = scenario[scenario["funding_status"] == "Funded"]
@@ -1126,7 +1321,7 @@ with tabs[11]:
 
     st.download_button("Download CIP ranked list", scenario[rank_cols].to_csv(index=False), "cip_ranked_projects.csv", "text/csv")
 
-with tabs[12]:
+with tabs[13]:
     st.subheader("Deferred Maintenance Analysis")
     cols = ["rank", "project_id", "project_name", "priority_score", "priority_level", "estimated_capital_cost", "deferred_5yr_cost", "deferred_cost_increase"]
     st.dataframe(scored[cols], use_container_width=True, hide_index=True)
@@ -1175,7 +1370,7 @@ The platform integrates asset condition, LOS and demand forecasting, strategic p
     st.text_area("Executive summary text", report, height=500)
     st.download_button("Download executive summary", report, "urbaniticsai_executive_summary.txt", "text/plain")
 
-with tabs[14]:
+with tabs[15]:
     st.subheader("Database-Style Schema and Input Requirements")
     st.dataframe(dictionary, use_container_width=True, hide_index=True)
     st.markdown("""
@@ -1189,7 +1384,7 @@ with tabs[14]:
 
 
 
-with tabs[13]:
+with tabs[14]:
     st.subheader("AI-Assisted Planning Narratives")
     st.caption("Rule-based narrative generation for explainable planning support.")
 

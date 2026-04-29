@@ -134,3 +134,16 @@ Selecting:
 will automatically update all scoring sliders to the appropriate weights.
 
 Users can still manually adjust the weights, but the total must remain 100% for scoring to run.
+
+
+## v12 update: Transparent Score Breakdown
+
+This version adds a Score Breakdown module that shows exactly how each project's final priority score is calculated.
+
+For each project, the platform now displays:
+- criterion-level component score
+- percentage weight
+- weighted point contribution
+- evidence/input behind each criterion
+- final score formula
+- downloadable score breakdown report

@@ -306,6 +306,25 @@ SCENARIOS = {
     }
 }
 
+def load_scenario_weights(scenario_name):
+    """Load the selected scenario's predefined weights into Streamlit session state."""
+    for key, value in SCENARIOS[scenario_name].items():
+        st.session_state[f"weight_{key}"] = int(value)
+
+def initialize_scenario_state(default_scenario="Balanced"):
+    """Initialize scenario and weight state once."""
+    if "selected_scenario" not in st.session_state:
+        st.session_state["selected_scenario"] = default_scenario
+        load_scenario_weights(default_scenario)
+
+def on_scenario_change():
+    """Automatically update all scoring weights when the scenario changes."""
+    scenario = st.session_state["scenario_select"]
+    st.session_state["selected_scenario"] = scenario
+    load_scenario_weights(scenario)
+
+
+
 def norm(raw):
     return (raw - 1) / 4 * 100
 
@@ -719,24 +738,37 @@ with st.sidebar:
         st.info("Using sample data. Upload the Excel template to analyze agency data.")
 
     st.header("Scenario")
-    scenario_name = st.selectbox("Prioritization scenario", list(SCENARIOS.keys()))
+
+    initialize_scenario_state("Balanced")
+
+    scenario_name = st.selectbox(
+        "Prioritization scenario",
+        list(SCENARIOS.keys()),
+        index=list(SCENARIOS.keys()).index(st.session_state.get("selected_scenario", "Balanced")),
+        key="scenario_select",
+        on_change=on_scenario_change,
+        help="Selecting a scenario automatically loads its predefined 100% scoring weight profile."
+    )
+
     base_weights = SCENARIOS[scenario_name].copy()
 
     st.header("Scoring Weights (%)")
 
-    st.caption("Weights must total 100%. These percentages determine how much each criterion contributes to the final priority score.")
+    st.caption("Weights must total 100%. Selecting a predefined scenario automatically loads its recommended weight profile. You may adjust weights manually, but the total must remain 100%.")
 
     weights = {}
 
-    # Percentage-based weighting. The selected scenario provides default weights,
-    # but users can adjust them as long as the final total equals 100%.
     for key, default in base_weights.items():
+        state_key = f"weight_{key}"
+        if state_key not in st.session_state:
+            st.session_state[state_key] = int(default)
+
         weights[key] = st.slider(
             key.replace("_", " ").title(),
             min_value=0,
             max_value=100,
-            value=int(default),
             step=1,
+            key=state_key,
             help="Weight as percentage of the total priority score"
         )
 
@@ -746,6 +778,10 @@ with st.sidebar:
         st.success(f"Total Weight: {total_weight}%")
     else:
         st.error(f"Total Weight: {total_weight}%. Please adjust the weights so the total equals 100%.")
+
+    with st.expander("Current Scenario Profile"):
+        st.write(f"**Selected Scenario:** {scenario_name}")
+        st.write("The weights shown above were loaded from the selected scenario profile. Manual edits are allowed, but the total must remain 100%.")
 
     st.header("Filters")
     district_filter = st.multiselect("District", sorted(projects["district"].unique()))

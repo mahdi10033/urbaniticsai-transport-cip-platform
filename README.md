@@ -118,3 +118,19 @@ The sidebar now shows:
 - error warning if total is not 100%
 
 The scoring engine stops until the user adjusts the weights to total 100%.
+
+
+## v11 update: Scenario-Linked Weight Profiles
+
+Each predefined scenario now automatically loads a 100% scoring-weight profile.
+
+Selecting:
+- Balanced
+- Safety First
+- ADA & Accessibility First
+- Financial Feasibility First
+- Strategic Alignment First
+
+will automatically update all scoring sliders to the appropriate weights.
+
+Users can still manually adjust the weights, but the total must remain 100% for scoring to run.

@@ -582,12 +582,59 @@ with tabs[0]:
         st.plotly_chart(fig, use_container_width=True)
 
 with tabs[1]:
-    st.subheader("Map-Centered Project View")
-    map_df = scored.rename(columns={"latitude": "lat", "longitude": "lon"})
-    st.map(map_df[["lat", "lon"]])
-    st.caption("MVP map. Production version should use ArcGIS, Mapbox, or Folium with priority-colored markers and layer controls.")
-    st.dataframe(scored[["rank", "project_id", "project_name", "asset_type", "district", "priority_score", "priority_level", "estimated_capital_cost"]],
-                 use_container_width=True, hide_index=True)
+
+    st.subheader("Priority Map")
+
+    priority_colors = {
+        "Critical": "#B00020",
+        "High": "#E65100",
+        "Medium": "#F9A825",
+        "Low": "#2E7D32"
+    }
+
+    fig = px.scatter_mapbox(
+        scored,
+
+        lat="latitude",
+        lon="longitude",
+
+        hover_name="project_name",
+
+        hover_data=[
+            "asset_type",
+            "district",
+            "priority_score",
+            "estimated_capital_cost"
+        ],
+
+        color="priority_level",
+
+        color_discrete_map=priority_colors,
+
+        size="priority_score",
+
+        size_max=30,
+
+        zoom=8,
+
+        height=700
+    )
+
+    fig.update_layout(
+        mapbox_style="carto-positron",
+
+        margin={
+            "r": 0,
+            "t": 0,
+            "l": 0,
+            "b": 0
+        }
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
 
 with tabs[2]:
     st.subheader("Top Priority Projects")

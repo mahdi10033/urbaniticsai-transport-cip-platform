@@ -1026,7 +1026,7 @@ else:
 
     project_row = scored[scored["project_name"] == selected_project].iloc[0]
 
-st.markdown(f"""
+    st.markdown(f"""
 <div style="
     background-color:#F1F5F9;
     padding:16px;

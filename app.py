@@ -1025,6 +1025,28 @@ else:
     )
 
     project_row = scored[scored["project_name"] == selected_project].iloc[0]
+    st.markdown(f"""
+    ### Selected Project: {project_row['project_name']}
+    **Project ID:** {project_row['project_id']}  
+    **Asset Type:** {project_row['asset_type']}  
+    **Location:** {project_row['corridor_or_location']}
+    """)
+    st.markdown(f"""
+<div style="
+    background-color:#F1F5F9;
+    padding:16px;
+    border-radius:12px;
+    border:1px solid #D9E2EC;
+    margin-bottom:16px;
+">
+    <h3 style="margin-bottom:6px;">{project_row['project_name']}</h3>
+    <p style="margin-bottom:0;">
+        <b>Project ID:</b> {project_row['project_id']} |
+        <b>Asset Type:</b> {project_row['asset_type']} |
+        <b>Location:</b> {project_row['corridor_or_location']}
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
     tabs = st.tabs([
         "Project Profile",

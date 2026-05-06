@@ -1024,13 +1024,7 @@ else:
         scored["project_name"].tolist()
     )
 
-    project_row = scored[scored["project_name"] == selected_project].iloc[0]
-    st.markdown(f"""
-    ### Selected Project: {project_row['project_name']}
-    **Project ID:** {project_row['project_id']}  
-    **Asset Type:** {project_row['asset_type']}  
-    **Location:** {project_row['corridor_or_location']}
-    """)
+    project_row = scored[scored["project_name"] == selected_project].iloc[0]\
     st.markdown(f"""
 <div style="
     background-color:#F1F5F9;

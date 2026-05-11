@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from io import BytesIO
 
 st.set_page_config(
     page_title="UrbaniticsAI Transportation CIP Platform",
@@ -206,6 +207,290 @@ CONDITION_MAP = {"Good": 1, "Fair": 2, "Poor": 3}
 LOS_MAP = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 6}
 
 # =====================================================
+# AGENCY TEMPLATE + UPLOAD VALIDATION
+# =====================================================
+
+AGENCY_REQUIRED_COLUMNS = [
+    "project_id", "asset_id", "project_name", "asset_type", "issue_type",
+    "district", "corridor_or_location", "latitude", "longitude", "condition",
+    "safety_risk", "crash_history_nearby", "near_school", "near_transit",
+    "ada_accessibility_concern", "current_los", "projected_los_no_build",
+    "expected_los_after_project", "demand_growth_level", "forecast_year",
+    "base_year_volume_or_demand", "forecast_year_volume_or_demand",
+    "estimated_capital_cost", "estimated_annual_om_cost",
+    "primary_funding_source", "funding_gap", "mtp_alignment", "lrtp_alignment",
+    "complete_streets_alignment", "vision_zero_alignment",
+    "ada_transition_plan_alignment", "resilience_alignment", "comp_plan_alignment",
+    "equity_priority_area", "community_concern_level",
+    "citizen_complaints_count", "cip_phase"
+]
+
+YES_NO_VALUES = {"Yes", "No"}
+LOW_MED_HIGH_VALUES = {"Low", "Medium", "High"}
+CONDITION_VALUES = {"Good", "Fair", "Poor"}
+LOS_VALUES = {"A", "B", "C", "D", "E", "F"}
+ALIGNMENT_VALUES = {"Weak", "Moderate", "Strong"}
+
+AGENCY_ALLOWED_VALUES = {
+    "condition": CONDITION_VALUES,
+    "safety_risk": LOW_MED_HIGH_VALUES,
+    "crash_history_nearby": YES_NO_VALUES,
+    "near_school": YES_NO_VALUES,
+    "near_transit": YES_NO_VALUES,
+    "ada_accessibility_concern": YES_NO_VALUES,
+    "current_los": LOS_VALUES,
+    "projected_los_no_build": LOS_VALUES,
+    "expected_los_after_project": LOS_VALUES,
+    "demand_growth_level": LOW_MED_HIGH_VALUES,
+    "mtp_alignment": ALIGNMENT_VALUES,
+    "lrtp_alignment": ALIGNMENT_VALUES,
+    "complete_streets_alignment": ALIGNMENT_VALUES,
+    "vision_zero_alignment": ALIGNMENT_VALUES,
+    "ada_transition_plan_alignment": ALIGNMENT_VALUES,
+    "resilience_alignment": ALIGNMENT_VALUES,
+    "comp_plan_alignment": ALIGNMENT_VALUES,
+    "equity_priority_area": YES_NO_VALUES,
+    "community_concern_level": LOW_MED_HIGH_VALUES,
+}
+
+NUMERIC_COLUMNS = [
+    "latitude", "longitude", "forecast_year", "base_year_volume_or_demand",
+    "forecast_year_volume_or_demand", "estimated_capital_cost",
+    "estimated_annual_om_cost", "funding_gap", "citizen_complaints_count",
+]
+
+DEMAND_COLUMNS = [
+    "project_id", "demand_growth_level", "forecast_year",
+    "base_year_volume_or_demand", "forecast_year_volume_or_demand",
+]
+
+@st.cache_data
+def create_agency_template_bytes():
+    """Create a one-sheet Excel agency data intake template."""
+    sample_rows = [
+        {
+            "project_id": "AG-001",
+            "asset_id": "AST-001",
+            "project_name": "Main Street Complete Streets Safety Project",
+            "asset_type": "Roadway",
+            "issue_type": "Safety and Complete Streets",
+            "district": "District 1",
+            "corridor_or_location": "Main St from 1st Ave to 5th Ave",
+            "latitude": 28.5383,
+            "longitude": -81.3792,
+            "condition": "Fair",
+            "safety_risk": "High",
+            "crash_history_nearby": "Yes",
+            "near_school": "Yes",
+            "near_transit": "Yes",
+            "ada_accessibility_concern": "Yes",
+            "current_los": "D",
+            "projected_los_no_build": "E",
+            "expected_los_after_project": "C",
+            "demand_growth_level": "High",
+            "forecast_year": 2035,
+            "base_year_volume_or_demand": 18000,
+            "forecast_year_volume_or_demand": 26000,
+            "estimated_capital_cost": 2500000,
+            "estimated_annual_om_cost": 45000,
+            "primary_funding_source": "Local Option Sales Tax",
+            "funding_gap": 500000,
+            "mtp_alignment": "Strong",
+            "lrtp_alignment": "Strong",
+            "complete_streets_alignment": "Strong",
+            "vision_zero_alignment": "Strong",
+            "ada_transition_plan_alignment": "Moderate",
+            "resilience_alignment": "Moderate",
+            "comp_plan_alignment": "Strong",
+            "equity_priority_area": "Yes",
+            "community_concern_level": "High",
+            "citizen_complaints_count": 18,
+            "cip_phase": "Design",
+        },
+        {
+            "project_id": "AG-002",
+            "asset_id": "AST-002",
+            "project_name": "Oak Avenue Sidewalk Gap Closure",
+            "asset_type": "Sidewalk",
+            "issue_type": "Sidewalk Gap",
+            "district": "District 2",
+            "corridor_or_location": "Oak Ave near Community Center",
+            "latitude": 28.5450,
+            "longitude": -81.3900,
+            "condition": "Poor",
+            "safety_risk": "Medium",
+            "crash_history_nearby": "No",
+            "near_school": "No",
+            "near_transit": "Yes",
+            "ada_accessibility_concern": "Yes",
+            "current_los": "C",
+            "projected_los_no_build": "D",
+            "expected_los_after_project": "C",
+            "demand_growth_level": "Medium",
+            "forecast_year": 2035,
+            "base_year_volume_or_demand": 2500,
+            "forecast_year_volume_or_demand": 4200,
+            "estimated_capital_cost": 450000,
+            "estimated_annual_om_cost": 12000,
+            "primary_funding_source": "Transportation Impact Fees",
+            "funding_gap": 75000,
+            "mtp_alignment": "Moderate",
+            "lrtp_alignment": "Moderate",
+            "complete_streets_alignment": "Strong",
+            "vision_zero_alignment": "Moderate",
+            "ada_transition_plan_alignment": "Strong",
+            "resilience_alignment": "Weak",
+            "comp_plan_alignment": "Moderate",
+            "equity_priority_area": "No",
+            "community_concern_level": "Medium",
+            "citizen_complaints_count": 7,
+            "cip_phase": "Planning",
+        },
+    ]
+
+    projects_input = pd.DataFrame(sample_rows, columns=AGENCY_REQUIRED_COLUMNS)
+
+    definitions = pd.DataFrame([
+        {"Field": "project_id", "Required": "Yes", "Accepted Values": "Unique text ID", "Description": "Unique project identifier."},
+        {"Field": "project_name", "Required": "Yes", "Accepted Values": "Text", "Description": "Project name used in dashboards and reports."},
+        {"Field": "asset_type", "Required": "Yes", "Accepted Values": "Roadway, Sidewalk, Intersection, Curb Ramp, Transit Stop, Bike Lane, Bridge/Structure, Crosswalk, etc.", "Description": "Primary asset or project category."},
+        {"Field": "condition", "Required": "Yes", "Accepted Values": "Good / Fair / Poor", "Description": "Existing asset condition."},
+        {"Field": "safety_risk", "Required": "Yes", "Accepted Values": "Low / Medium / High", "Description": "Agency-assessed safety concern level."},
+        {"Field": "Yes/No fields", "Required": "Yes", "Accepted Values": "Yes / No", "Description": "Use Yes/No for crash, school, transit, ADA, and equity indicators."},
+        {"Field": "LOS fields", "Required": "Yes", "Accepted Values": "A / B / C / D / E / F", "Description": "Transportation level of service values."},
+        {"Field": "alignment fields", "Required": "Yes", "Accepted Values": "Weak / Moderate / Strong", "Description": "Degree of alignment with adopted plans and policy frameworks."},
+        {"Field": "estimated_capital_cost", "Required": "Yes", "Accepted Values": "Number", "Description": "Estimated capital cost in dollars."},
+        {"Field": "funding_gap", "Required": "Yes", "Accepted Values": "Number", "Description": "Unfunded amount in dollars."},
+    ])
+
+    scenarios = pd.DataFrame([{"Scenario": scenario, **weights} for scenario, weights in SCENARIOS.items()])
+
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        projects_input.to_excel(writer, index=False, sheet_name="Projects_Input")
+        definitions.to_excel(writer, index=False, sheet_name="Field_Definitions")
+        scenarios.to_excel(writer, index=False, sheet_name="Example_Scenarios")
+    output.seek(0)
+    return output.getvalue()
+
+def validate_projects_input(df):
+    """Validate one-sheet Projects_Input upload and return a structured report."""
+    report = {
+        "missing_columns": [],
+        "invalid_values": {},
+        "duplicate_project_ids": [],
+        "empty_required_fields": {},
+        "numeric_issues": {},
+        "readiness_score": 0,
+        "status": "Failed",
+    }
+
+    if df is None or len(df) == 0:
+        report["missing_columns"] = AGENCY_REQUIRED_COLUMNS
+        return report
+
+    report["missing_columns"] = [c for c in AGENCY_REQUIRED_COLUMNS if c not in df.columns]
+    present_required = [c for c in AGENCY_REQUIRED_COLUMNS if c in df.columns]
+
+    for col in present_required:
+        missing_count = int(df[col].isna().sum() + (df[col].astype(str).str.strip() == "").sum())
+        if missing_count > 0:
+            report["empty_required_fields"][col] = missing_count
+
+    if "project_id" in df.columns:
+        duplicate_ids = df[df["project_id"].duplicated(keep=False)]["project_id"].dropna().astype(str).unique().tolist()
+        report["duplicate_project_ids"] = duplicate_ids
+
+    for col, allowed in AGENCY_ALLOWED_VALUES.items():
+        if col in df.columns:
+            values = df[col].dropna().astype(str).str.strip()
+            invalid = sorted([v for v in values.unique().tolist() if v and v not in allowed])
+            if invalid:
+                report["invalid_values"][col] = invalid
+
+    for col in NUMERIC_COLUMNS:
+        if col in df.columns:
+            numeric = pd.to_numeric(df[col], errors="coerce")
+            bad_count = int(numeric.isna().sum() - df[col].isna().sum())
+            if bad_count > 0:
+                report["numeric_issues"][col] = bad_count
+
+    total_checks = len(AGENCY_REQUIRED_COLUMNS) + len(AGENCY_ALLOWED_VALUES) + len(NUMERIC_COLUMNS) + 1
+    failed_checks = (
+        len(report["missing_columns"])
+        + len(report["invalid_values"])
+        + len(report["numeric_issues"])
+        + (1 if report["duplicate_project_ids"] else 0)
+    )
+    report["readiness_score"] = max(0, round((1 - failed_checks / total_checks) * 100))
+
+    critical_blockers = (
+        len(report["missing_columns"]) > 0
+        or len(report["invalid_values"]) > 0
+        or len(report["numeric_issues"]) > 0
+        or len(report["duplicate_project_ids"]) > 0
+    )
+    report["status"] = "Ready" if not critical_blockers else "Needs Review"
+    return report
+
+def display_upload_validation(report, row_count):
+    """Show validation results in the sidebar."""
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Upload Validation")
+
+    if report["status"] == "Ready":
+        st.sidebar.success(f"Validated successfully. {row_count:,} projects ready.")
+    else:
+        st.sidebar.warning(f"Upload needs review. {row_count:,} rows detected.")
+
+    st.sidebar.metric("Data Readiness", f"{report.get('readiness_score', 0)}%")
+
+    with st.sidebar.expander("View validation details"):
+        if report["missing_columns"]:
+            st.error("Missing required columns")
+            st.write(report["missing_columns"])
+
+        if report["invalid_values"]:
+            st.error("Invalid values")
+            for col, vals in report["invalid_values"].items():
+                st.write(f"**{col}:** {', '.join(vals)}")
+
+        if report["numeric_issues"]:
+            st.error("Numeric field issues")
+            for col, count in report["numeric_issues"].items():
+                st.write(f"**{col}:** {count} non-numeric value(s)")
+
+        if report["duplicate_project_ids"]:
+            st.error("Duplicate project IDs")
+            st.write(report["duplicate_project_ids"])
+
+        if report["empty_required_fields"]:
+            st.warning("Empty required fields")
+            st.write(report["empty_required_fields"])
+
+        if not report["missing_columns"] and not report["invalid_values"] and not report["numeric_issues"] and not report["duplicate_project_ids"]:
+            st.success("No blocking validation issues found.")
+
+def split_one_sheet_input(projects_input):
+    """Split one-sheet agency input into app-compatible projects and demand tables."""
+    df = projects_input.copy()
+
+    for col in NUMERIC_COLUMNS:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+
+    demand_cols_present = [c for c in DEMAND_COLUMNS if c in df.columns]
+    demand = df[demand_cols_present].copy()
+
+    project_drop_cols = [c for c in DEMAND_COLUMNS if c != "project_id" and c in df.columns]
+    projects = df.drop(columns=project_drop_cols, errors="ignore").copy()
+
+    return projects, demand
+
+
+
+
+# =====================================================
 # DATA LOADING
 # =====================================================
 
@@ -219,29 +504,60 @@ def load_default_tables():
     return projects, funding, schedule, demand, dictionary
 
 def load_uploaded_workbook(uploaded_file):
+    """Load either the new one-sheet Projects_Input workbook or the older multi-sheet workbook."""
     try:
-        projects = pd.read_excel(uploaded_file, sheet_name="projects_assets")
-        uploaded_file.seek(0)
-        demand = pd.read_excel(uploaded_file, sheet_name="demand_forecasts")
-        uploaded_file.seek(0)
+        excel_file = pd.ExcelFile(uploaded_file)
+
+        if "Projects_Input" in excel_file.sheet_names:
+            projects_input = pd.read_excel(excel_file, sheet_name="Projects_Input")
+            validation_report = validate_projects_input(projects_input)
+
+            if validation_report["missing_columns"]:
+                return None, None, None, None, None, "Missing required columns in Projects_Input.", validation_report
+
+            projects, demand = split_one_sheet_input(projects_input)
+
+            try:
+                schedule = pd.read_excel(excel_file, sheet_name="implementation_schedule")
+            except Exception:
+                schedule = pd.read_csv("implementation_schedule.csv")
+
+            try:
+                funding = pd.read_excel(excel_file, sheet_name="funding_sources")
+            except Exception:
+                funding = pd.read_csv("funding_sources.csv")
+
+            dictionary = pd.read_csv("data_dictionary.csv")
+            return projects, funding, schedule, demand, dictionary, None, validation_report
+
+        # Backward-compatible multi-sheet workflow
+        projects = pd.read_excel(excel_file, sheet_name="projects_assets")
+        demand = pd.read_excel(excel_file, sheet_name="demand_forecasts")
 
         try:
-            schedule = pd.read_excel(uploaded_file, sheet_name="implementation_schedule")
+            schedule = pd.read_excel(excel_file, sheet_name="implementation_schedule")
         except Exception:
             schedule = pd.read_csv("implementation_schedule.csv")
 
-        uploaded_file.seek(0)
-
         try:
-            funding = pd.read_excel(uploaded_file, sheet_name="funding_sources")
+            funding = pd.read_excel(excel_file, sheet_name="funding_sources")
         except Exception:
             funding = pd.read_csv("funding_sources.csv")
 
         dictionary = pd.read_csv("data_dictionary.csv")
-        return projects, funding, schedule, demand, dictionary, None
+        validation_report = {
+            "status": "Ready",
+            "readiness_score": 100,
+            "missing_columns": [],
+            "invalid_values": {},
+            "duplicate_project_ids": [],
+            "empty_required_fields": {},
+            "numeric_issues": {},
+        }
+        return projects, funding, schedule, demand, dictionary, None, validation_report
 
     except Exception as e:
-        return None, None, None, None, None, str(e)
+        return None, None, None, None, None, str(e), None
 
 # =====================================================
 # UTILITY SCORING HELPERS
@@ -725,16 +1041,29 @@ st.sidebar.markdown("## UrbaniticsAI")
 st.sidebar.caption("CIP Intelligence Platform")
 st.sidebar.markdown("---")
 
+
+st.sidebar.download_button(
+    label="Download Agency Template (.xlsx)",
+    data=create_agency_template_bytes(),
+    file_name="UrbaniticsAI_Agency_Data_Template_v1.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    help="Download a one-sheet Excel template for agency project intake."
+)
+
 uploaded_excel = st.sidebar.file_uploader("Upload agency Excel workbook", type=["xlsx"])
 
+upload_validation_report = None
+
 if uploaded_excel:
-    projects, funding, schedule, demand, dictionary, error = load_uploaded_workbook(uploaded_excel)
+    projects, funding, schedule, demand, dictionary, error, upload_validation_report = load_uploaded_workbook(uploaded_excel)
     if error:
         st.sidebar.error("Could not load workbook. Using default sample data.")
         st.sidebar.caption(error)
         projects, funding, schedule, demand, dictionary = load_default_tables()
     else:
         st.sidebar.success("Uploaded workbook loaded successfully.")
+        if upload_validation_report is not None:
+            display_upload_validation(upload_validation_report, len(projects))
 else:
     projects, funding, schedule, demand, dictionary = load_default_tables()
 

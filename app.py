@@ -61,6 +61,13 @@ section[data-testid="stSidebar"] div[data-baseweb="tag"] span {
 
 section[data-testid="stSidebar"] button {
     color: #111827 !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid #D1D5DB !important;
+    font-weight: 600 !important;
+}
+
+section[data-testid="stSidebar"] button p {
+    color: #111827 !important;
 }
 
 section[data-testid="stSidebar"] small {

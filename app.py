@@ -541,6 +541,215 @@ def split_one_sheet_input(projects_input):
 
 
 # =====================================================
+# GUIDED AGENCY SETUP WIZARD
+# =====================================================
+
+def dataframe_to_template_bytes(df):
+    """Export guided agency input to the one-sheet workbook format."""
+    output = BytesIO()
+    definitions = pd.DataFrame([
+        {"Field": "project_id", "Accepted Values": "Unique text ID", "Description": "Unique project identifier."},
+        {"Field": "condition", "Accepted Values": "Good / Fair / Poor", "Description": "Existing asset condition."},
+        {"Field": "safety_risk", "Accepted Values": "Low / Medium / High", "Description": "Agency-assessed safety concern level."},
+        {"Field": "LOS fields", "Accepted Values": "A / B / C / D / E / F", "Description": "Transportation level of service values."},
+        {"Field": "alignment fields", "Accepted Values": "Weak / Moderate / Strong", "Description": "Alignment with adopted plans."},
+    ])
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="Projects_Input")
+        definitions.to_excel(writer, index=False, sheet_name="Field_Definitions")
+        pd.DataFrame([{"Scenario": scenario, **weights} for scenario, weights in SCENARIOS.items()]).to_excel(
+            writer, index=False, sheet_name="Example_Scenarios"
+        )
+    output.seek(0)
+    return output.getvalue()
+
+
+def build_guided_agency_setup():
+    """TurboTax-style guided data entry for agency administrators."""
+    st.subheader("Guided Agency Setup")
+    st.info(
+        "Use this guided workflow when an agency does not have a perfectly formatted spreadsheet. "
+        "The wizard collects project-by-project inputs, flags missing information, and creates a dashboard-ready dataset."
+    )
+
+    setup_tabs = st.tabs([
+        "1. Agency Profile",
+        "2. Project Criteria Entry",
+        "3. Missing Data Review",
+        "4. Export / Use Dataset"
+    ])
+
+    with setup_tabs[0]:
+        st.markdown("### Agency Profile")
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.selectbox("Agency type", ["City", "County", "MPO/TPO", "DOT", "Public Works", "Other"], key="guided_agency_type")
+        with c2:
+            st.selectbox("Primary prioritization goal", ["Balanced", "Safety First", "ADA & Accessibility First", "Financial Feasibility First", "Strategic Alignment First"], key="guided_primary_goal")
+        with c3:
+            st.number_input("Number of projects to enter", min_value=1, max_value=25, value=3, step=1, key="guided_project_count")
+
+        st.markdown("### Current data status")
+        st.multiselect(
+            "What data sources does the agency currently have?",
+            ["Excel CIP list", "GIS project layer", "Crash/safety data", "LOS or demand data", "Asset condition data", "Funding data", "Public complaint records", "Consultant reports"],
+            default=["Excel CIP list"],
+            key="guided_data_sources"
+        )
+
+    rows = []
+    n_projects = int(st.session_state.get("guided_project_count", 3))
+
+    yes_no = ["", "Yes", "No"]
+    lmh = ["", "Low", "Medium", "High"]
+    condition_options = ["", "Good", "Fair", "Poor"]
+    los_options = ["", "A", "B", "C", "D", "E", "F"]
+    alignment_options = ["", "Weak", "Moderate", "Strong"]
+
+    with setup_tabs[1]:
+        st.markdown("### Project-by-Project Criteria Entry")
+        st.caption("Blank fields are allowed for now. The next tab will identify missing information and suggest follow-up questions.")
+
+        for i in range(n_projects):
+            with st.expander(f"Project {i + 1}", expanded=(i == 0)):
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    project_id = st.text_input("Project ID", value=f"GUIDED-{i+1:03d}", key=f"g_project_id_{i}")
+                    project_name = st.text_input("Project name", key=f"g_project_name_{i}")
+                    asset_type = st.selectbox("Asset type", ["", "Roadway", "Sidewalk", "Intersection", "Curb Ramp", "Transit Stop", "Bike Lane", "Bridge/Structure", "Crosswalk", "Other"], key=f"g_asset_type_{i}")
+                    district = st.text_input("District / Area", key=f"g_district_{i}")
+                    location = st.text_input("Corridor or location", key=f"g_location_{i}")
+                with c2:
+                    condition = st.selectbox("Asset condition", condition_options, key=f"g_condition_{i}")
+                    safety_risk = st.selectbox("Safety risk", lmh, key=f"g_safety_{i}")
+                    crash_history = st.selectbox("Crash history nearby?", yes_no, key=f"g_crash_{i}")
+                    near_school = st.selectbox("Near school?", yes_no, key=f"g_school_{i}")
+                    near_transit = st.selectbox("Near transit?", yes_no, key=f"g_transit_{i}")
+                    ada = st.selectbox("ADA/accessibility concern?", yes_no, key=f"g_ada_{i}")
+                with c3:
+                    current_los = st.selectbox("Current LOS", los_options, key=f"g_current_los_{i}")
+                    no_build_los = st.selectbox("Projected no-build LOS", los_options, key=f"g_nobuild_los_{i}")
+                    after_los = st.selectbox("Expected LOS after project", los_options, key=f"g_after_los_{i}")
+                    demand_growth = st.selectbox("Demand growth level", lmh, key=f"g_demand_{i}")
+                    cap_cost = st.number_input("Estimated capital cost", min_value=0.0, value=0.0, step=10000.0, key=f"g_cost_{i}")
+                    funding_gap = st.number_input("Funding gap", min_value=0.0, value=0.0, step=10000.0, key=f"g_gap_{i}")
+
+                st.markdown("#### Strategic alignment")
+                a1, a2, a3, a4 = st.columns(4)
+                with a1:
+                    mtp = st.selectbox("MTP", alignment_options, key=f"g_mtp_{i}")
+                    lrtp = st.selectbox("LRTP", alignment_options, key=f"g_lrtp_{i}")
+                with a2:
+                    complete = st.selectbox("Complete Streets", alignment_options, key=f"g_complete_{i}")
+                    vision = st.selectbox("Vision Zero", alignment_options, key=f"g_vision_{i}")
+                with a3:
+                    ada_plan = st.selectbox("ADA Transition Plan", alignment_options, key=f"g_ada_plan_{i}")
+                    resilience = st.selectbox("Resilience", alignment_options, key=f"g_resilience_{i}")
+                with a4:
+                    comp = st.selectbox("Comprehensive Plan", alignment_options, key=f"g_comp_{i}")
+                    equity = st.selectbox("Equity priority area?", yes_no, key=f"g_equity_{i}")
+
+                community = st.selectbox("Community concern level", lmh, key=f"g_community_{i}")
+                complaints = st.number_input("Citizen complaints count", min_value=0, value=0, step=1, key=f"g_complaints_{i}")
+                latitude = st.number_input("Latitude", value=0.0, format="%.6f", key=f"g_lat_{i}")
+                longitude = st.number_input("Longitude", value=0.0, format="%.6f", key=f"g_lon_{i}")
+
+                rows.append({
+                    "project_id": project_id,
+                    "asset_id": f"AST-{i+1:03d}",
+                    "project_name": project_name if project_name else f"Untitled Project {i+1}",
+                    "asset_type": asset_type,
+                    "issue_type": "Guided intake",
+                    "district": district,
+                    "corridor_or_location": location,
+                    "latitude": latitude,
+                    "longitude": longitude,
+                    "condition": condition,
+                    "safety_risk": safety_risk,
+                    "crash_history_nearby": crash_history,
+                    "near_school": near_school,
+                    "near_transit": near_transit,
+                    "ada_accessibility_concern": ada,
+                    "current_los": current_los,
+                    "projected_los_no_build": no_build_los,
+                    "expected_los_after_project": after_los,
+                    "demand_growth_level": demand_growth,
+                    "forecast_year": 2035,
+                    "base_year_volume_or_demand": 0,
+                    "forecast_year_volume_or_demand": 0,
+                    "estimated_capital_cost": cap_cost,
+                    "estimated_annual_om_cost": 0,
+                    "primary_funding_source": "To be determined",
+                    "funding_gap": funding_gap,
+                    "mtp_alignment": mtp,
+                    "lrtp_alignment": lrtp,
+                    "complete_streets_alignment": complete,
+                    "vision_zero_alignment": vision,
+                    "ada_transition_plan_alignment": ada_plan,
+                    "resilience_alignment": resilience,
+                    "comp_plan_alignment": comp,
+                    "equity_priority_area": equity,
+                    "community_concern_level": community,
+                    "citizen_complaints_count": complaints,
+                    "cip_phase": "Planning",
+                })
+
+    guided_df = pd.DataFrame(rows, columns=AGENCY_REQUIRED_COLUMNS)
+    validation = validate_projects_input(guided_df)
+
+    with setup_tabs[2]:
+        st.markdown("### Missing Data Review and Smart Follow-Up Questions")
+        st.metric("Guided Data Readiness", f"{validation.get('readiness_score', 0)}%")
+
+        if validation["empty_required_fields"]:
+            st.warning("Some fields are blank. The platform can still create a preliminary dataset, but the following items should be reviewed.")
+            st.dataframe(
+                pd.DataFrame([
+                    {"Field": k, "Missing/Blank Count": v} for k, v in validation["empty_required_fields"].items()
+                ]),
+                use_container_width=True,
+                hide_index=True
+            )
+        else:
+            st.success("No blank required fields were detected.")
+
+        followups = []
+        for _, r in guided_df.iterrows():
+            name = r.get("project_name", "Untitled project")
+            if not r.get("ada_accessibility_concern"):
+                followups.append({"Project": name, "Suggested follow-up": "Confirm whether an ADA/accessibility concern exists."})
+            if not r.get("safety_risk"):
+                followups.append({"Project": name, "Suggested follow-up": "Assign a Low/Medium/High safety risk level."})
+            if not r.get("current_los"):
+                followups.append({"Project": name, "Suggested follow-up": "Enter current LOS or mark as not applicable in a future version."})
+            if float(r.get("estimated_capital_cost", 0) or 0) == 0:
+                followups.append({"Project": name, "Suggested follow-up": "Add a planning-level capital cost estimate."})
+            if not r.get("vision_zero_alignment"):
+                followups.append({"Project": name, "Suggested follow-up": "Assess Vision Zero/safety policy alignment."})
+
+        if followups:
+            st.dataframe(pd.DataFrame(followups), use_container_width=True, hide_index=True)
+        else:
+            st.success("No major follow-up questions were generated.")
+
+    with setup_tabs[3]:
+        st.markdown("### Export or Use Guided Dataset")
+        st.dataframe(guided_df, use_container_width=True, hide_index=True)
+
+        st.download_button(
+            "Download Guided Dataset (.xlsx)",
+            data=dataframe_to_template_bytes(guided_df),
+            file_name="UrbaniticsAI_Guided_Agency_Input.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+        if st.button("Use this guided dataset in dashboard", type="primary"):
+            st.session_state["use_guided_dataset"] = True
+            st.session_state["guided_projects_input"] = guided_df
+            st.success("Guided dataset saved. Switch to Portfolio Intelligence or Project Intelligence to analyze it.")
+
+
+# =====================================================
 # DATA LOADING
 # =====================================================
 
@@ -1122,8 +1331,21 @@ else:
 st.sidebar.header("Analysis Level")
 analysis_level = st.sidebar.radio(
     "Select analysis level",
-    ["Portfolio Intelligence", "Project Intelligence"]
+    ["Guided Agency Setup", "Portfolio Intelligence", "Project Intelligence"]
 )
+
+if st.session_state.get("use_guided_dataset") and "guided_projects_input" in st.session_state and analysis_level != "Guided Agency Setup":
+    projects, demand = split_one_sheet_input(st.session_state["guided_projects_input"])
+    st.sidebar.success("Using guided setup dataset.")
+
+if analysis_level == "Guided Agency Setup":
+    build_guided_agency_setup()
+    st.markdown("---")
+    st.markdown(
+        "<div class='footer'>UrbaniticsAI | Transportation Infrastructure Decision Intelligence Platform</div>",
+        unsafe_allow_html=True
+    )
+    st.stop()
 
 st.sidebar.header("Scenario")
 
@@ -1407,7 +1629,7 @@ else:
 
     project_row = scored[scored["project_name"] == selected_project].iloc[0]
 
-st.markdown(f"""
+    st.markdown(f"""
 <div style="
     background-color:#F1F5F9;
     padding:16px;
@@ -1422,7 +1644,7 @@ st.markdown(f"""
         <b>Location:</b> {project_row['corridor_or_location']}
     </p>
 </div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
     tabs = st.tabs([
         "Project Profile",

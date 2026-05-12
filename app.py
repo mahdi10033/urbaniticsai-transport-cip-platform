@@ -61,6 +61,13 @@ section[data-testid="stSidebar"] div[data-baseweb="tag"] span {
 
 section[data-testid="stSidebar"] button {
     color: #111827 !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid #D1D5DB !important;
+    font-weight: 600 !important;
+}
+
+section[data-testid="stSidebar"] button p {
+    color: #111827 !important;
 }
 
 section[data-testid="stSidebar"] small {
@@ -208,50 +215,22 @@ LOS_MAP = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 6}
 
 
 # =====================================================
-# AGENCY TEMPLATE + UPLOAD VALIDATION
+# AGENCY TEMPLATE, VALIDATION, AND GUIDED SETUP
 # =====================================================
 
 AGENCY_REQUIRED_COLUMNS = [
-    "project_id",
-    "asset_id",
-    "project_name",
-    "asset_type",
-    "issue_type",
-    "district",
-    "corridor_or_location",
-    "latitude",
-    "longitude",
-    "condition",
-    "safety_risk",
-    "crash_history_nearby",
-    "near_school",
-    "near_transit",
-    "ada_accessibility_concern",
-    "current_los",
-    "projected_los_no_build",
-    "expected_los_after_project",
-    "demand_growth_level",
-    "forecast_year",
-    "base_year_volume_or_demand",
-    "forecast_year_volume_or_demand",
-    "estimated_capital_cost",
-    "estimated_annual_om_cost",
-    "primary_funding_source",
-    "funding_gap",
-    "mtp_alignment",
-    "lrtp_alignment",
-    "complete_streets_alignment",
-    "vision_zero_alignment",
-    "ada_transition_plan_alignment",
-    "resilience_alignment",
-    "comp_plan_alignment",
-    "equity_priority_area",
-    "community_concern_level",
-    "citizen_complaints_count",
-    "cip_phase"
+    "project_id", "asset_id", "project_name", "asset_type", "issue_type",
+    "district", "corridor_or_location", "latitude", "longitude", "condition",
+    "safety_risk", "crash_history_nearby", "near_school", "near_transit",
+    "ada_accessibility_concern", "current_los", "projected_los_no_build",
+    "expected_los_after_project", "demand_growth_level", "forecast_year",
+    "base_year_volume_or_demand", "forecast_year_volume_or_demand",
+    "estimated_capital_cost", "estimated_annual_om_cost", "primary_funding_source",
+    "funding_gap", "mtp_alignment", "lrtp_alignment", "complete_streets_alignment",
+    "vision_zero_alignment", "ada_transition_plan_alignment", "resilience_alignment",
+    "comp_plan_alignment", "equity_priority_area", "community_concern_level",
+    "citizen_complaints_count", "cip_phase"
 ]
-
-AGENCY_OPTIONAL_COLUMNS = []
 
 YES_NO_VALUES = {"Yes", "No"}
 LOW_MED_HIGH_VALUES = {"Low", "Medium", "High"}
@@ -278,134 +257,111 @@ AGENCY_ALLOWED_VALUES = {
     "resilience_alignment": ALIGNMENT_VALUES,
     "comp_plan_alignment": ALIGNMENT_VALUES,
     "equity_priority_area": YES_NO_VALUES,
-    "community_concern_level": LOW_MED_HIGH_VALUES
+    "community_concern_level": LOW_MED_HIGH_VALUES,
 }
 
 NUMERIC_COLUMNS = [
-    "latitude",
-    "longitude",
-    "forecast_year",
-    "base_year_volume_or_demand",
-    "forecast_year_volume_or_demand",
-    "estimated_capital_cost",
-    "estimated_annual_om_cost",
-    "funding_gap",
-    "citizen_complaints_count"
+    "latitude", "longitude", "forecast_year", "base_year_volume_or_demand",
+    "forecast_year_volume_or_demand", "estimated_capital_cost",
+    "estimated_annual_om_cost", "funding_gap", "citizen_complaints_count"
 ]
 
 DEMAND_COLUMNS = [
-    "project_id",
-    "demand_growth_level",
-    "forecast_year",
-    "base_year_volume_or_demand",
-    "forecast_year_volume_or_demand"
+    "project_id", "demand_growth_level", "forecast_year",
+    "base_year_volume_or_demand", "forecast_year_volume_or_demand"
 ]
+
+
+def default_project_row(i=1):
+    return {
+        "project_id": f"GUIDED-{i:03d}",
+        "asset_id": f"AST-{i:03d}",
+        "project_name": f"Untitled Project {i}",
+        "asset_type": "Sidewalk",
+        "issue_type": "Guided intake",
+        "district": "Unassigned",
+        "corridor_or_location": "Location to be assigned",
+        "latitude": 0.0,
+        "longitude": 0.0,
+        "condition": "Fair",
+        "safety_risk": "Medium",
+        "crash_history_nearby": "No",
+        "near_school": "No",
+        "near_transit": "No",
+        "ada_accessibility_concern": "No",
+        "current_los": "C",
+        "projected_los_no_build": "D",
+        "expected_los_after_project": "C",
+        "demand_growth_level": "Medium",
+        "forecast_year": 2035,
+        "base_year_volume_or_demand": 0,
+        "forecast_year_volume_or_demand": 0,
+        "estimated_capital_cost": 0.0,
+        "estimated_annual_om_cost": 0.0,
+        "primary_funding_source": "To be determined",
+        "funding_gap": 0.0,
+        "mtp_alignment": "Moderate",
+        "lrtp_alignment": "Moderate",
+        "complete_streets_alignment": "Moderate",
+        "vision_zero_alignment": "Moderate",
+        "ada_transition_plan_alignment": "Moderate",
+        "resilience_alignment": "Moderate",
+        "comp_plan_alignment": "Moderate",
+        "equity_priority_area": "No",
+        "community_concern_level": "Medium",
+        "citizen_complaints_count": 0,
+        "cip_phase": "Planning",
+    }
 
 
 @st.cache_data
 def create_agency_template_bytes():
-    """Create a one-sheet agency data intake template with examples and definitions."""
-    sample_rows = [
-        {
-            "project_id": "AG-001",
-            "asset_id": "AST-001",
-            "project_name": "Main Street Complete Streets Safety Project",
-            "asset_type": "Roadway",
-            "issue_type": "Safety and Complete Streets",
-            "district": "District 1",
-            "corridor_or_location": "Main St from 1st Ave to 5th Ave",
-            "latitude": 28.5383,
-            "longitude": -81.3792,
-            "condition": "Fair",
-            "safety_risk": "High",
-            "crash_history_nearby": "Yes",
-            "near_school": "Yes",
-            "near_transit": "Yes",
-            "ada_accessibility_concern": "Yes",
-            "current_los": "D",
-            "projected_los_no_build": "E",
-            "expected_los_after_project": "C",
-            "demand_growth_level": "High",
-            "forecast_year": 2035,
-            "base_year_volume_or_demand": 18000,
-            "forecast_year_volume_or_demand": 26000,
-            "estimated_capital_cost": 2500000,
-            "estimated_annual_om_cost": 45000,
-            "primary_funding_source": "Local Option Sales Tax",
-            "funding_gap": 500000,
-            "mtp_alignment": "Strong",
-            "lrtp_alignment": "Strong",
-            "complete_streets_alignment": "Strong",
-            "vision_zero_alignment": "Strong",
-            "ada_transition_plan_alignment": "Moderate",
-            "resilience_alignment": "Moderate",
-            "comp_plan_alignment": "Strong",
-            "equity_priority_area": "Yes",
-            "community_concern_level": "High",
-            "citizen_complaints_count": 18,
-            "cip_phase": "Design"
-        },
-        {
-            "project_id": "AG-002",
-            "asset_id": "AST-002",
-            "project_name": "Oak Avenue Sidewalk Gap Closure",
-            "asset_type": "Sidewalk",
-            "issue_type": "Sidewalk Gap",
-            "district": "District 2",
-            "corridor_or_location": "Oak Ave near Community Center",
-            "latitude": 28.5450,
-            "longitude": -81.3900,
-            "condition": "Poor",
-            "safety_risk": "Medium",
-            "crash_history_nearby": "No",
-            "near_school": "No",
-            "near_transit": "Yes",
-            "ada_accessibility_concern": "Yes",
-            "current_los": "C",
-            "projected_los_no_build": "D",
-            "expected_los_after_project": "C",
-            "demand_growth_level": "Medium",
-            "forecast_year": 2035,
-            "base_year_volume_or_demand": 2500,
-            "forecast_year_volume_or_demand": 4200,
-            "estimated_capital_cost": 450000,
-            "estimated_annual_om_cost": 12000,
-            "primary_funding_source": "Transportation Impact Fees",
-            "funding_gap": 75000,
-            "mtp_alignment": "Moderate",
-            "lrtp_alignment": "Moderate",
-            "complete_streets_alignment": "Strong",
-            "vision_zero_alignment": "Moderate",
-            "ada_transition_plan_alignment": "Strong",
-            "resilience_alignment": "Weak",
-            "comp_plan_alignment": "Moderate",
-            "equity_priority_area": "No",
-            "community_concern_level": "Medium",
-            "citizen_complaints_count": 7,
-            "cip_phase": "Planning"
-        }
-    ]
-
-    projects_input = pd.DataFrame(sample_rows, columns=AGENCY_REQUIRED_COLUMNS)
-
+    rows = [default_project_row(1), default_project_row(2)]
+    rows[0].update({
+        "project_name": "Main Street Complete Streets Safety Project",
+        "asset_type": "Roadway",
+        "issue_type": "Safety and Complete Streets",
+        "district": "District 1",
+        "corridor_or_location": "Main St from 1st Ave to 5th Ave",
+        "latitude": 28.5383,
+        "longitude": -81.3792,
+        "condition": "Fair",
+        "safety_risk": "High",
+        "crash_history_nearby": "Yes",
+        "near_school": "Yes",
+        "near_transit": "Yes",
+        "ada_accessibility_concern": "Yes",
+        "estimated_capital_cost": 2500000,
+        "funding_gap": 500000,
+        "mtp_alignment": "Strong",
+        "lrtp_alignment": "Strong",
+        "complete_streets_alignment": "Strong",
+        "vision_zero_alignment": "Strong",
+        "community_concern_level": "High",
+        "citizen_complaints_count": 18,
+    })
+    rows[1].update({
+        "project_name": "Oak Avenue Sidewalk Gap Closure",
+        "asset_type": "Sidewalk",
+        "issue_type": "Sidewalk Gap",
+        "district": "District 2",
+        "corridor_or_location": "Oak Ave near Community Center",
+        "latitude": 28.5450,
+        "longitude": -81.3900,
+        "condition": "Poor",
+        "ada_accessibility_concern": "Yes",
+        "estimated_capital_cost": 450000,
+        "funding_gap": 75000,
+    })
+    projects_input = pd.DataFrame(rows, columns=AGENCY_REQUIRED_COLUMNS)
     definitions = pd.DataFrame([
-        {"Field": "project_id", "Required": "Yes", "Accepted Values": "Unique text ID", "Description": "Unique project identifier."},
-        {"Field": "project_name", "Required": "Yes", "Accepted Values": "Text", "Description": "Project name used in dashboards and reports."},
-        {"Field": "asset_type", "Required": "Yes", "Accepted Values": "Roadway, Sidewalk, Intersection, Curb Ramp, Transit Stop, Bike Lane, Bridge/Structure, Crosswalk, etc.", "Description": "Primary asset or project category."},
-        {"Field": "condition", "Required": "Yes", "Accepted Values": "Good / Fair / Poor", "Description": "Existing asset condition."},
-        {"Field": "safety_risk", "Required": "Yes", "Accepted Values": "Low / Medium / High", "Description": "Agency-assessed safety concern level."},
-        {"Field": "Yes/No fields", "Required": "Yes", "Accepted Values": "Yes / No", "Description": "Use Yes/No for crash, school, transit, ADA, and equity indicators."},
-        {"Field": "LOS fields", "Required": "Yes", "Accepted Values": "A / B / C / D / E / F", "Description": "Transportation level of service values."},
-        {"Field": "alignment fields", "Required": "Yes", "Accepted Values": "Weak / Moderate / Strong", "Description": "Degree of alignment with adopted plans and policy frameworks."},
-        {"Field": "estimated_capital_cost", "Required": "Yes", "Accepted Values": "Number", "Description": "Estimated capital cost in dollars."},
-        {"Field": "funding_gap", "Required": "Yes", "Accepted Values": "Number", "Description": "Unfunded amount in dollars."}
+        {"Field": "safety_risk", "Accepted Values": "Low / Medium / High", "Guideline": "Low = minor concern; Medium = documented concern; High = severe safety issue, crash pattern, or exposure risk."},
+        {"Field": "condition", "Accepted Values": "Good / Fair / Poor", "Guideline": "Good = functional; Fair = deteriorating; Poor = urgent or visibly deficient."},
+        {"Field": "alignment fields", "Accepted Values": "Weak / Moderate / Strong", "Guideline": "Weak = indirect support; Moderate = partial alignment; Strong = clearly identified in adopted plans/policies."},
+        {"Field": "LOS fields", "Accepted Values": "A / B / C / D / E / F", "Guideline": "Use current, no-build, and after-project conditions where applicable."},
+        {"Field": "latitude/longitude", "Accepted Values": "Decimal degrees", "Guideline": "Use 0 or leave blank if location is corridor-based only."},
     ])
-
-    scenarios = pd.DataFrame([
-        {"Scenario": scenario, **weights}
-        for scenario, weights in SCENARIOS.items()
-    ])
-
+    scenarios = pd.DataFrame([{"Scenario": scenario, **weights} for scenario, weights in SCENARIOS.items()])
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         projects_input.to_excel(writer, index=False, sheet_name="Projects_Input")
@@ -416,7 +372,6 @@ def create_agency_template_bytes():
 
 
 def validate_projects_input(df):
-    """Validate one-sheet Projects_Input upload and return a structured report."""
     report = {
         "missing_columns": [],
         "invalid_values": {},
@@ -424,235 +379,212 @@ def validate_projects_input(df):
         "empty_required_fields": {},
         "numeric_issues": {},
         "readiness_score": 0,
-        "status": "Failed"
+        "status": "Failed",
     }
-
     if df is None or len(df) == 0:
         report["missing_columns"] = AGENCY_REQUIRED_COLUMNS
         return report
-
     report["missing_columns"] = [c for c in AGENCY_REQUIRED_COLUMNS if c not in df.columns]
-
-    present_required = [c for c in AGENCY_REQUIRED_COLUMNS if c in df.columns]
-
-    for col in present_required:
+    for col in [c for c in AGENCY_REQUIRED_COLUMNS if c in df.columns]:
         missing_count = int(df[col].isna().sum() + (df[col].astype(str).str.strip() == "").sum())
         if missing_count > 0:
             report["empty_required_fields"][col] = missing_count
-
     if "project_id" in df.columns:
         duplicate_ids = df[df["project_id"].duplicated(keep=False)]["project_id"].dropna().astype(str).unique().tolist()
         report["duplicate_project_ids"] = duplicate_ids
-
     for col, allowed in AGENCY_ALLOWED_VALUES.items():
         if col in df.columns:
             values = df[col].dropna().astype(str).str.strip()
             invalid = sorted([v for v in values.unique().tolist() if v and v not in allowed])
             if invalid:
                 report["invalid_values"][col] = invalid
-
     for col in NUMERIC_COLUMNS:
         if col in df.columns:
             numeric = pd.to_numeric(df[col], errors="coerce")
             bad_count = int(numeric.isna().sum() - df[col].isna().sum())
             if bad_count > 0:
                 report["numeric_issues"][col] = bad_count
-
     total_checks = len(AGENCY_REQUIRED_COLUMNS) + len(AGENCY_ALLOWED_VALUES) + len(NUMERIC_COLUMNS) + 1
-    failed_checks = (
-        len(report["missing_columns"])
-        + len(report["invalid_values"])
-        + len(report["numeric_issues"])
-        + (1 if report["duplicate_project_ids"] else 0)
-    )
-    readiness = max(0, round((1 - failed_checks / total_checks) * 100))
-    report["readiness_score"] = readiness
-
-    critical_blockers = (
-        len(report["missing_columns"]) > 0
-        or len(report["invalid_values"]) > 0
-        or len(report["numeric_issues"]) > 0
-        or len(report["duplicate_project_ids"]) > 0
-    )
+    failed_checks = len(report["missing_columns"]) + len(report["invalid_values"]) + len(report["numeric_issues"]) + (1 if report["duplicate_project_ids"] else 0)
+    report["readiness_score"] = max(0, round((1 - failed_checks / total_checks) * 100))
+    critical_blockers = bool(report["missing_columns"] or report["invalid_values"] or report["numeric_issues"] or report["duplicate_project_ids"])
     report["status"] = "Ready" if not critical_blockers else "Needs Review"
     return report
 
 
 def display_upload_validation(report, row_count):
-    """Show validation results in the sidebar."""
     st.sidebar.markdown("---")
     st.sidebar.subheader("Upload Validation")
-
     if report["status"] == "Ready":
         st.sidebar.success(f"Validated successfully. {row_count:,} projects ready.")
     else:
         st.sidebar.warning(f"Upload needs review. {row_count:,} rows detected.")
-
-    readiness = report.get("readiness_score", 0)
-    st.sidebar.metric("Data Readiness", f"{readiness}%")
-
+    st.sidebar.metric("Data Readiness", f"{report.get('readiness_score', 0)}%")
     with st.sidebar.expander("View validation details"):
         if report["missing_columns"]:
             st.error("Missing required columns")
             st.write(report["missing_columns"])
-
         if report["invalid_values"]:
             st.error("Invalid values")
             for col, vals in report["invalid_values"].items():
                 st.write(f"**{col}:** {', '.join(vals)}")
-
         if report["numeric_issues"]:
             st.error("Numeric field issues")
-            for col, count in report["numeric_issues"].items():
-                st.write(f"**{col}:** {count} non-numeric value(s)")
-
+            st.write(report["numeric_issues"])
         if report["duplicate_project_ids"]:
             st.error("Duplicate project IDs")
             st.write(report["duplicate_project_ids"])
-
         if report["empty_required_fields"]:
-            st.warning("Empty required fields")
+            st.warning("Empty fields detected")
             st.write(report["empty_required_fields"])
-
-        if (
-            not report["missing_columns"]
-            and not report["invalid_values"]
-            and not report["numeric_issues"]
-            and not report["duplicate_project_ids"]
-        ):
+        if not report["missing_columns"] and not report["invalid_values"] and not report["numeric_issues"] and not report["duplicate_project_ids"]:
             st.success("No blocking validation issues found.")
 
 
 def split_one_sheet_input(projects_input):
-    """Split one-sheet agency input into the app's projects and demand tables."""
     df = projects_input.copy()
-
+    for col in AGENCY_REQUIRED_COLUMNS:
+        if col not in df.columns:
+            df[col] = default_project_row(1).get(col, "")
     for col in NUMERIC_COLUMNS:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
-
     demand_cols_present = [c for c in DEMAND_COLUMNS if c in df.columns]
     demand = df[demand_cols_present].copy()
-
     project_drop_cols = [c for c in DEMAND_COLUMNS if c != "project_id" and c in df.columns]
     projects = df.drop(columns=project_drop_cols, errors="ignore").copy()
-
     return projects, demand
 
 
-# =====================================================
-# GUIDED AGENCY SETUP WIZARD
-# =====================================================
-
 def dataframe_to_template_bytes(df):
-    """Export guided agency input to the one-sheet workbook format."""
     output = BytesIO()
-    definitions = pd.DataFrame([
-        {"Field": "project_id", "Accepted Values": "Unique text ID", "Description": "Unique project identifier."},
-        {"Field": "condition", "Accepted Values": "Good / Fair / Poor", "Description": "Existing asset condition."},
-        {"Field": "safety_risk", "Accepted Values": "Low / Medium / High", "Description": "Agency-assessed safety concern level."},
-        {"Field": "LOS fields", "Accepted Values": "A / B / C / D / E / F", "Description": "Transportation level of service values."},
-        {"Field": "alignment fields", "Accepted Values": "Weak / Moderate / Strong", "Description": "Alignment with adopted plans."},
-    ])
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         df.to_excel(writer, index=False, sheet_name="Projects_Input")
-        definitions.to_excel(writer, index=False, sheet_name="Field_Definitions")
-        pd.DataFrame([{"Scenario": scenario, **weights} for scenario, weights in SCENARIOS.items()]).to_excel(
-            writer, index=False, sheet_name="Example_Scenarios"
-        )
+        pd.DataFrame([{"Field": c, "Description": "UrbaniticsAI guided setup field"} for c in AGENCY_REQUIRED_COLUMNS]).to_excel(writer, index=False, sheet_name="Field_Definitions")
+        pd.DataFrame([{"Scenario": scenario, **weights} for scenario, weights in SCENARIOS.items()]).to_excel(writer, index=False, sheet_name="Example_Scenarios")
     output.seek(0)
     return output.getvalue()
 
 
-def build_guided_agency_setup():
-    """TurboTax-style guided data entry for agency administrators."""
+def build_guided_agency_setup(projects_reference=None):
     st.subheader("Guided Agency Setup")
-    st.info(
-        "Use this guided workflow when an agency does not have a perfectly formatted spreadsheet. "
-        "The wizard collects project-by-project inputs, flags missing information, and creates a dashboard-ready dataset."
-    )
+    st.info("Manually enter project-level information using a step-by-step workflow. When complete, send the guided dataset directly into Portfolio Intelligence and Project Intelligence.")
 
-    setup_tabs = st.tabs([
-        "1. Agency Profile",
-        "2. Project Criteria Entry",
-        "3. Missing Data Review",
-        "4. Export / Use Dataset"
-    ])
+    if "guided_project_count" not in st.session_state:
+        st.session_state["guided_project_count"] = 3
+
+    setup_tabs = st.tabs(["1. Setup", "2. Project Entry", "3. Review Missing Data", "4. Use in Dashboard"])
 
     with setup_tabs[0]:
-        st.markdown("### Agency Profile")
+        st.markdown("### Agency Setup")
         c1, c2, c3 = st.columns(3)
         with c1:
             st.selectbox("Agency type", ["City", "County", "MPO/TPO", "DOT", "Public Works", "Other"], key="guided_agency_type")
         with c2:
-            st.selectbox("Primary prioritization goal", ["Balanced", "Safety First", "ADA & Accessibility First", "Financial Feasibility First", "Strategic Alignment First"], key="guided_primary_goal")
+            selected_goal = st.selectbox("Primary prioritization goal", list(SCENARIOS.keys()), key="guided_primary_goal")
         with c3:
-            st.number_input("Number of projects to enter", min_value=1, max_value=25, value=3, step=1, key="guided_project_count")
+            st.number_input("Number of projects to enter", min_value=1, max_value=30, value=int(st.session_state.get("guided_project_count", 3)), step=1, key="guided_project_count")
+        if st.button("Load this scenario weight profile", key="guided_load_scenario"):
+            load_scenario_weights(selected_goal)
+            st.session_state["selected_scenario"] = selected_goal
+            st.success(f"{selected_goal} weights loaded. They will be used in the dashboard scoring engine.")
+        st.caption("This setup focuses on manual project intake. The dashboard remains available for portfolio and project-level analysis after data entry.")
 
-        st.markdown("### Current data status")
-        st.multiselect(
-            "What data sources does the agency currently have?",
-            ["Excel CIP list", "GIS project layer", "Crash/safety data", "LOS or demand data", "Asset condition data", "Funding data", "Public complaint records", "Consultant reports"],
-            default=["Excel CIP list"],
-            key="guided_data_sources"
-        )
+    reference_districts = []
+    reference_corridors = []
+    if isinstance(projects_reference, pd.DataFrame) and len(projects_reference) > 0:
+        if "district" in projects_reference.columns:
+            reference_districts = sorted([x for x in projects_reference["district"].dropna().astype(str).unique().tolist() if x.strip()])
+        if "corridor_or_location" in projects_reference.columns:
+            reference_corridors = sorted([x for x in projects_reference["corridor_or_location"].dropna().astype(str).unique().tolist() if x.strip()])
+
+    yes_no = ["Yes", "No"]
+    lmh = ["Low", "Medium", "High"]
+    condition_options = ["Good", "Fair", "Poor"]
+    los_options = ["A", "B", "C", "D", "E", "F"]
+    alignment_options = ["Weak", "Moderate", "Strong"]
+    asset_options = ["Roadway", "Sidewalk", "Intersection", "Curb Ramp", "Transit Stop", "Bike Lane", "Bridge/Structure", "Crosswalk", "Other"]
+    phase_options = ["Planning", "Design", "Right-of-Way", "Construction", "Maintenance", "Deferred"]
 
     rows = []
     n_projects = int(st.session_state.get("guided_project_count", 3))
 
-    yes_no = ["", "Yes", "No"]
-    lmh = ["", "Low", "Medium", "High"]
-    condition_options = ["", "Good", "Fair", "Poor"]
-    los_options = ["", "A", "B", "C", "D", "E", "F"]
-    alignment_options = ["", "Weak", "Moderate", "Strong"]
-
     with setup_tabs[1]:
         st.markdown("### Project-by-Project Criteria Entry")
-        st.caption("Blank fields are allowed for now. The next tab will identify missing information and suggest follow-up questions.")
-
+        st.caption("Use planning judgment where exact data are not available. Light scoring guidelines are provided below each criterion group.")
         for i in range(n_projects):
             with st.expander(f"Project {i + 1}", expanded=(i == 0)):
+                st.markdown("#### Basic project information")
                 c1, c2, c3 = st.columns(3)
                 with c1:
                     project_id = st.text_input("Project ID", value=f"GUIDED-{i+1:03d}", key=f"g_project_id_{i}")
-                    project_name = st.text_input("Project name", key=f"g_project_name_{i}")
-                    asset_type = st.selectbox("Asset type", ["", "Roadway", "Sidewalk", "Intersection", "Curb Ramp", "Transit Stop", "Bike Lane", "Bridge/Structure", "Crosswalk", "Other"], key=f"g_asset_type_{i}")
-                    district = st.text_input("District / Area", key=f"g_district_{i}")
-                    location = st.text_input("Corridor or location", key=f"g_location_{i}")
+                    project_name = st.text_input("Project name", value=st.session_state.get(f"g_project_name_{i}", ""), key=f"g_project_name_{i}")
+                    asset_type = st.selectbox("Asset type", asset_options, key=f"g_asset_type_{i}")
                 with c2:
-                    condition = st.selectbox("Asset condition", condition_options, key=f"g_condition_{i}")
-                    safety_risk = st.selectbox("Safety risk", lmh, key=f"g_safety_{i}")
+                    if reference_districts:
+                        district_pick = st.selectbox("District / Area", ["Enter new district/area"] + reference_districts, key=f"g_district_pick_{i}")
+                        district_new = st.text_input("New district / area" if district_pick == "Enter new district/area" else "Optional district override", key=f"g_district_new_{i}")
+                        district = district_new if district_pick == "Enter new district/area" and district_new else (district_new or district_pick)
+                    else:
+                        district = st.text_input("District / Area", value="Unassigned", key=f"g_district_{i}")
+                    if reference_corridors:
+                        corridor_pick = st.selectbox("Search/select corridor or location", ["Enter new corridor/location"] + reference_corridors, key=f"g_corridor_pick_{i}")
+                        corridor_new = st.text_input("New corridor or location" if corridor_pick == "Enter new corridor/location" else "Optional corridor override", key=f"g_corridor_new_{i}")
+                        location = corridor_new if corridor_pick == "Enter new corridor/location" and corridor_new else (corridor_new or corridor_pick)
+                    else:
+                        location = st.text_input("Corridor or location", value="Location to be assigned", key=f"g_location_{i}")
+                with c3:
+                    latitude = st.number_input("Latitude", value=0.0, format="%.6f", key=f"g_lat_{i}")
+                    longitude = st.number_input("Longitude", value=0.0, format="%.6f", key=f"g_lon_{i}")
+                    st.caption("If latitude/longitude are not available, use the corridor/location field. The project will remain in the tables but may not appear on the map.")
+
+                st.markdown("#### Need, safety, accessibility, and mobility")
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    condition = st.selectbox("Asset condition", condition_options, index=1, key=f"g_condition_{i}")
+                    st.caption("Good = functional | Fair = deteriorating | Poor = urgent or visibly deficient")
+                    safety_risk = st.selectbox("Safety risk", lmh, index=1, key=f"g_safety_{i}")
+                    st.caption("Low = minor concern | Medium = documented concern | High = severe issue, crash pattern, or exposure risk")
+                with c2:
                     crash_history = st.selectbox("Crash history nearby?", yes_no, key=f"g_crash_{i}")
                     near_school = st.selectbox("Near school?", yes_no, key=f"g_school_{i}")
                     near_transit = st.selectbox("Near transit?", yes_no, key=f"g_transit_{i}")
                     ada = st.selectbox("ADA/accessibility concern?", yes_no, key=f"g_ada_{i}")
+                    st.caption("Yes means the project addresses, or is affected by, an ADA/accessibility deficiency or access need.")
                 with c3:
-                    current_los = st.selectbox("Current LOS", los_options, key=f"g_current_los_{i}")
-                    no_build_los = st.selectbox("Projected no-build LOS", los_options, key=f"g_nobuild_los_{i}")
-                    after_los = st.selectbox("Expected LOS after project", los_options, key=f"g_after_los_{i}")
-                    demand_growth = st.selectbox("Demand growth level", lmh, key=f"g_demand_{i}")
-                    cap_cost = st.number_input("Estimated capital cost", min_value=0.0, value=0.0, step=10000.0, key=f"g_cost_{i}")
-                    funding_gap = st.number_input("Funding gap", min_value=0.0, value=0.0, step=10000.0, key=f"g_gap_{i}")
+                    current_los = st.selectbox("Current LOS", los_options, index=2, key=f"g_current_los_{i}")
+                    no_build_los = st.selectbox("Projected no-build LOS", los_options, index=3, key=f"g_nobuild_los_{i}")
+                    after_los = st.selectbox("Expected LOS after project", los_options, index=2, key=f"g_after_los_{i}")
+                    demand_growth = st.selectbox("Demand growth level", lmh, index=1, key=f"g_demand_{i}")
+                    st.caption("Use LOS only where applicable. For non-vehicular assets, use professional judgment or keep a neutral value.")
 
                 st.markdown("#### Strategic alignment")
+                st.caption("Weak = indirect support | Moderate = partial alignment | Strong = clearly supports adopted plan, policy, or program")
                 a1, a2, a3, a4 = st.columns(4)
                 with a1:
-                    mtp = st.selectbox("MTP", alignment_options, key=f"g_mtp_{i}")
-                    lrtp = st.selectbox("LRTP", alignment_options, key=f"g_lrtp_{i}")
+                    mtp = st.selectbox("MTP", alignment_options, index=1, key=f"g_mtp_{i}")
+                    lrtp = st.selectbox("LRTP", alignment_options, index=1, key=f"g_lrtp_{i}")
                 with a2:
-                    complete = st.selectbox("Complete Streets", alignment_options, key=f"g_complete_{i}")
-                    vision = st.selectbox("Vision Zero", alignment_options, key=f"g_vision_{i}")
+                    complete = st.selectbox("Complete Streets", alignment_options, index=1, key=f"g_complete_{i}")
+                    vision = st.selectbox("Vision Zero", alignment_options, index=1, key=f"g_vision_{i}")
                 with a3:
-                    ada_plan = st.selectbox("ADA Transition Plan", alignment_options, key=f"g_ada_plan_{i}")
-                    resilience = st.selectbox("Resilience", alignment_options, key=f"g_resilience_{i}")
+                    ada_plan = st.selectbox("ADA Transition Plan", alignment_options, index=1, key=f"g_ada_plan_{i}")
+                    resilience = st.selectbox("Resilience", alignment_options, index=1, key=f"g_resilience_{i}")
                 with a4:
-                    comp = st.selectbox("Comprehensive Plan", alignment_options, key=f"g_comp_{i}")
+                    comp = st.selectbox("Comprehensive Plan", alignment_options, index=1, key=f"g_comp_{i}")
                     equity = st.selectbox("Equity priority area?", yes_no, key=f"g_equity_{i}")
 
-                community = st.selectbox("Community concern level", lmh, key=f"g_community_{i}")
-                complaints = st.number_input("Citizen complaints count", min_value=0, value=0, step=1, key=f"g_complaints_{i}")
-                latitude = st.number_input("Latitude", value=0.0, format="%.6f", key=f"g_lat_{i}")
-                longitude = st.number_input("Longitude", value=0.0, format="%.6f", key=f"g_lon_{i}")
+                st.markdown("#### Cost, funding, and community input")
+                f1, f2, f3, f4 = st.columns(4)
+                with f1:
+                    cap_cost = st.number_input("Estimated capital cost", min_value=0.0, value=0.0, step=10000.0, key=f"g_cost_{i}")
+                with f2:
+                    funding_gap = st.number_input("Funding gap", min_value=0.0, value=0.0, step=10000.0, key=f"g_gap_{i}")
+                with f3:
+                    community = st.selectbox("Community concern level", lmh, index=1, key=f"g_community_{i}")
+                    complaints = st.number_input("Citizen complaints count", min_value=0, value=0, step=1, key=f"g_complaints_{i}")
+                with f4:
+                    cip_phase = st.selectbox("CIP phase", phase_options, key=f"g_phase_{i}")
 
                 rows.append({
                     "project_id": project_id,
@@ -660,8 +592,8 @@ def build_guided_agency_setup():
                     "project_name": project_name if project_name else f"Untitled Project {i+1}",
                     "asset_type": asset_type,
                     "issue_type": "Guided intake",
-                    "district": district,
-                    "corridor_or_location": location,
+                    "district": district if district else "Unassigned",
+                    "corridor_or_location": location if location else "Location to be assigned",
                     "latitude": latitude,
                     "longitude": longitude,
                     "condition": condition,
@@ -691,7 +623,7 @@ def build_guided_agency_setup():
                     "equity_priority_area": equity,
                     "community_concern_level": community,
                     "citizen_complaints_count": complaints,
-                    "cip_phase": "Planning",
+                    "cip_phase": cip_phase,
                 })
 
     guided_df = pd.DataFrame(rows, columns=AGENCY_REQUIRED_COLUMNS)
@@ -699,55 +631,46 @@ def build_guided_agency_setup():
 
     with setup_tabs[2]:
         st.markdown("### Missing Data Review and Smart Follow-Up Questions")
-        st.metric("Guided Data Readiness", f"{validation.get('readiness_score', 0)}%")
-
-        if validation["empty_required_fields"]:
-            st.warning("Some fields are blank. The platform can still create a preliminary dataset, but the following items should be reviewed.")
-            st.dataframe(
-                pd.DataFrame([
-                    {"Field": k, "Missing/Blank Count": v} for k, v in validation["empty_required_fields"].items()
-                ]),
-                use_container_width=True,
-                hide_index=True
-            )
-        else:
-            st.success("No blank required fields were detected.")
-
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Guided Data Readiness", f"{validation.get('readiness_score', 0)}%")
+        c2.metric("Projects Entered", f"{len(guided_df):,}")
+        c3.metric("Non-Geocoded Projects", f"{int(((guided_df['latitude'] == 0) | (guided_df['longitude'] == 0)).sum()):,}")
         followups = []
         for _, r in guided_df.iterrows():
             name = r.get("project_name", "Untitled project")
-            if not r.get("ada_accessibility_concern"):
-                followups.append({"Project": name, "Suggested follow-up": "Confirm whether an ADA/accessibility concern exists."})
-            if not r.get("safety_risk"):
-                followups.append({"Project": name, "Suggested follow-up": "Assign a Low/Medium/High safety risk level."})
-            if not r.get("current_los"):
-                followups.append({"Project": name, "Suggested follow-up": "Enter current LOS or mark as not applicable in a future version."})
+            if not r.get("corridor_or_location") or r.get("corridor_or_location") == "Location to be assigned":
+                followups.append({"Project": name, "Suggested follow-up": "Add a corridor or location so the project can be spatially referenced."})
             if float(r.get("estimated_capital_cost", 0) or 0) == 0:
                 followups.append({"Project": name, "Suggested follow-up": "Add a planning-level capital cost estimate."})
-            if not r.get("vision_zero_alignment"):
-                followups.append({"Project": name, "Suggested follow-up": "Assess Vision Zero/safety policy alignment."})
-
+            if r.get("safety_risk") == "High" and r.get("crash_history_nearby") == "No":
+                followups.append({"Project": name, "Suggested follow-up": "High safety risk was selected. Confirm whether crash history or exposure evidence exists."})
+            if r.get("ada_accessibility_concern") == "Yes" and r.get("ada_transition_plan_alignment") == "Weak":
+                followups.append({"Project": name, "Suggested follow-up": "ADA concern is marked Yes. Confirm ADA Transition Plan alignment."})
+            if float(r.get("funding_gap", 0) or 0) == 0 and float(r.get("estimated_capital_cost", 0) or 0) > 0:
+                followups.append({"Project": name, "Suggested follow-up": "Confirm whether the project is fully funded or whether funding gap is unknown."})
         if followups:
             st.dataframe(pd.DataFrame(followups), use_container_width=True, hide_index=True)
         else:
             st.success("No major follow-up questions were generated.")
-
-    with setup_tabs[3]:
-        st.markdown("### Export or Use Guided Dataset")
+        st.markdown("### Guided Dataset Preview")
         st.dataframe(guided_df, use_container_width=True, hide_index=True)
 
+    with setup_tabs[3]:
+        st.markdown("### Use Guided Dataset in Dashboard")
+        st.write("Click the button below to make this guided dataset the active dataset for Portfolio Intelligence and Project Intelligence. District/Area and Asset Type entries will automatically appear in dashboard filters.")
         st.download_button(
             "Download Guided Dataset (.xlsx)",
             data=dataframe_to_template_bytes(guided_df),
             file_name="UrbaniticsAI_Guided_Agency_Input.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-
-        if st.button("Use this guided dataset in dashboard", type="primary"):
+        if st.button("Use Guided Setup Data in Dashboard", type="primary"):
             st.session_state["use_guided_dataset"] = True
             st.session_state["guided_projects_input"] = guided_df
-            st.success("Guided dataset saved. Switch to Portfolio Intelligence or Project Intelligence to analyze it.")
-
+            st.success("Guided dataset is now connected. Select Portfolio Intelligence or Project Intelligence in the sidebar to analyze it.")
+        if st.button("Return to Default Demo Dataset"):
+            st.session_state["use_guided_dataset"] = False
+            st.success("Default demo dataset restored.")
 
 # =====================================================
 # DATA LOADING
@@ -763,63 +686,44 @@ def load_default_tables():
     return projects, funding, schedule, demand, dictionary
 
 def load_uploaded_workbook(uploaded_file):
-    """Load either the new one-sheet Projects_Input workbook or the older multi-sheet workbook."""
+    """Load either one-sheet Projects_Input workbooks or older multi-sheet workbooks."""
     try:
         excel_file = pd.ExcelFile(uploaded_file)
-
         if "Projects_Input" in excel_file.sheet_names:
             projects_input = pd.read_excel(excel_file, sheet_name="Projects_Input")
             validation_report = validate_projects_input(projects_input)
-
             if validation_report["missing_columns"]:
                 return None, None, None, None, None, "Missing required columns in Projects_Input.", validation_report
-
             projects, demand = split_one_sheet_input(projects_input)
-
             try:
                 schedule = pd.read_excel(excel_file, sheet_name="implementation_schedule")
             except Exception:
                 schedule = pd.read_csv("implementation_schedule.csv")
-
             try:
                 funding = pd.read_excel(excel_file, sheet_name="funding_sources")
             except Exception:
                 funding = pd.read_csv("funding_sources.csv")
-
             dictionary = pd.read_csv("data_dictionary.csv")
             return projects, funding, schedule, demand, dictionary, None, validation_report
 
-        # Backward-compatible multi-sheet workflow
         projects = pd.read_excel(excel_file, sheet_name="projects_assets")
         demand = pd.read_excel(excel_file, sheet_name="demand_forecasts")
-
         try:
             schedule = pd.read_excel(excel_file, sheet_name="implementation_schedule")
         except Exception:
             schedule = pd.read_csv("implementation_schedule.csv")
-
         try:
             funding = pd.read_excel(excel_file, sheet_name="funding_sources")
         except Exception:
             funding = pd.read_csv("funding_sources.csv")
-
         dictionary = pd.read_csv("data_dictionary.csv")
-
         validation_report = {
-            "status": "Ready",
-            "readiness_score": 100,
-            "missing_columns": [],
-            "invalid_values": {},
-            "duplicate_project_ids": [],
-            "empty_required_fields": {},
-            "numeric_issues": {}
+            "status": "Ready", "readiness_score": 100, "missing_columns": [],
+            "invalid_values": {}, "duplicate_project_ids": [], "empty_required_fields": {}, "numeric_issues": {}
         }
-
         return projects, funding, schedule, demand, dictionary, None, validation_report
-
     except Exception as e:
         return None, None, None, None, None, str(e), None
-
 
 # =====================================================
 # UTILITY SCORING HELPERS
@@ -1314,7 +1218,6 @@ st.sidebar.download_button(
 uploaded_excel = st.sidebar.file_uploader("Upload agency Excel workbook", type=["xlsx"])
 
 upload_validation_report = None
-
 if uploaded_excel:
     projects, funding, schedule, demand, dictionary, error, upload_validation_report = load_uploaded_workbook(uploaded_excel)
     if error:
@@ -1339,7 +1242,7 @@ if st.session_state.get("use_guided_dataset") and "guided_projects_input" in st.
     st.sidebar.success("Using guided setup dataset.")
 
 if analysis_level == "Guided Agency Setup":
-    build_guided_agency_setup()
+    build_guided_agency_setup(projects)
     st.markdown("---")
     st.markdown(
         "<div class='footer'>UrbaniticsAI | Transportation Infrastructure Decision Intelligence Platform</div>",
@@ -1467,30 +1370,39 @@ if analysis_level == "Portfolio Intelligence":
         st.subheader("Priority Map")
         st.caption("Color represents priority level. Circle size represents priority score.")
 
-        fig = px.scatter_mapbox(
-            scored,
-            lat="latitude",
-            lon="longitude",
-            color="priority_level",
-            size="priority_score",
-            hover_name="project_name",
-            hover_data={
-                "asset_type": True,
-                "district": True,
-                "priority_score": True,
-                "priority_level": True,
-                "estimated_capital_cost": ":,.0f",
-                "latitude": False,
-                "longitude": False
-            },
-            color_discrete_map=priority_colors,
-            size_max=32,
-            zoom=8,
-            height=650
-        )
-        fig.update_layout(mapbox_style="carto-positron", margin={"r": 0, "t": 0, "l": 0, "b": 0}, legend_title_text="Priority Level")
-        st.plotly_chart(fig, use_container_width=True)
-
+        map_df = scored.copy()
+        for geo_col in ["latitude", "longitude"]:
+            if geo_col not in map_df.columns:
+                map_df[geo_col] = 0
+            map_df[geo_col] = pd.to_numeric(map_df[geo_col], errors="coerce").fillna(0)
+        valid_geo = map_df[(map_df["latitude"] != 0) & (map_df["longitude"] != 0)]
+        if len(valid_geo) > 0:
+            fig = px.scatter_mapbox(
+                valid_geo,
+                lat="latitude",
+                lon="longitude",
+                color="priority_level",
+                size="priority_score",
+                hover_name="project_name",
+                hover_data={
+                    "asset_type": True,
+                    "district": True,
+                    "corridor_or_location": True,
+                    "priority_score": True,
+                    "priority_level": True,
+                    "estimated_capital_cost": ":,.0f",
+                    "latitude": False,
+                    "longitude": False
+                },
+                color_discrete_map=priority_colors,
+                size_max=32,
+                zoom=8,
+                height=650
+            )
+            fig.update_layout(mapbox_style="carto-positron", margin={"r": 0, "t": 0, "l": 0, "b": 0}, legend_title_text="Priority Level")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.warning("No valid latitude/longitude values are available. Projects remain available in the tables using corridor/location information.")
         st.markdown("---")
         st.subheader("Mapped Project List")
         st.dataframe(
@@ -1530,8 +1442,8 @@ if analysis_level == "Portfolio Intelligence":
                 "Scenario": name,
                 "Average Priority Score": round(temp["priority_score"].mean(), 1),
                 "Critical/High Projects": int(temp["priority_level"].isin(["Critical", "High"]).sum()),
-                "Top Project": temp.iloc[0]["project_name"],
-                "Top Project Score": temp.iloc[0]["priority_score"]
+                "Top Project": temp.iloc[0]["project_name"] if len(temp) > 0 else "No projects",
+                "Top Project Score": temp.iloc[0]["priority_score"] if len(temp) > 0 else 0
             })
 
         st.dataframe(pd.DataFrame(scenario_results), use_container_width=True, hide_index=True)
@@ -1644,7 +1556,7 @@ else:
         <b>Location:</b> {project_row['corridor_or_location']}
     </p>
 </div>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
     tabs = st.tabs([
         "Project Profile",

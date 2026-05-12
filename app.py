@@ -61,13 +61,6 @@ section[data-testid="stSidebar"] div[data-baseweb="tag"] span {
 
 section[data-testid="stSidebar"] button {
     color: #111827 !important;
-    background-color: #FFFFFF !important;
-    border: 1px solid #D1D5DB !important;
-    font-weight: 600 !important;
-}
-
-section[data-testid="stSidebar"] button p {
-    color: #111827 !important;
 }
 
 section[data-testid="stSidebar"] small {
@@ -213,24 +206,52 @@ WEAK_MOD_STRONG_MAP = {"Weak": 1, "Moderate": 2, "Strong": 3}
 CONDITION_MAP = {"Good": 1, "Fair": 2, "Poor": 3}
 LOS_MAP = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 6}
 
+
 # =====================================================
 # AGENCY TEMPLATE + UPLOAD VALIDATION
 # =====================================================
 
 AGENCY_REQUIRED_COLUMNS = [
-    "project_id", "asset_id", "project_name", "asset_type", "issue_type",
-    "district", "corridor_or_location", "latitude", "longitude", "condition",
-    "safety_risk", "crash_history_nearby", "near_school", "near_transit",
-    "ada_accessibility_concern", "current_los", "projected_los_no_build",
-    "expected_los_after_project", "demand_growth_level", "forecast_year",
-    "base_year_volume_or_demand", "forecast_year_volume_or_demand",
-    "estimated_capital_cost", "estimated_annual_om_cost",
-    "primary_funding_source", "funding_gap", "mtp_alignment", "lrtp_alignment",
-    "complete_streets_alignment", "vision_zero_alignment",
-    "ada_transition_plan_alignment", "resilience_alignment", "comp_plan_alignment",
-    "equity_priority_area", "community_concern_level",
-    "citizen_complaints_count", "cip_phase"
+    "project_id",
+    "asset_id",
+    "project_name",
+    "asset_type",
+    "issue_type",
+    "district",
+    "corridor_or_location",
+    "latitude",
+    "longitude",
+    "condition",
+    "safety_risk",
+    "crash_history_nearby",
+    "near_school",
+    "near_transit",
+    "ada_accessibility_concern",
+    "current_los",
+    "projected_los_no_build",
+    "expected_los_after_project",
+    "demand_growth_level",
+    "forecast_year",
+    "base_year_volume_or_demand",
+    "forecast_year_volume_or_demand",
+    "estimated_capital_cost",
+    "estimated_annual_om_cost",
+    "primary_funding_source",
+    "funding_gap",
+    "mtp_alignment",
+    "lrtp_alignment",
+    "complete_streets_alignment",
+    "vision_zero_alignment",
+    "ada_transition_plan_alignment",
+    "resilience_alignment",
+    "comp_plan_alignment",
+    "equity_priority_area",
+    "community_concern_level",
+    "citizen_complaints_count",
+    "cip_phase"
 ]
+
+AGENCY_OPTIONAL_COLUMNS = []
 
 YES_NO_VALUES = {"Yes", "No"}
 LOW_MED_HIGH_VALUES = {"Low", "Medium", "High"}
@@ -257,23 +278,33 @@ AGENCY_ALLOWED_VALUES = {
     "resilience_alignment": ALIGNMENT_VALUES,
     "comp_plan_alignment": ALIGNMENT_VALUES,
     "equity_priority_area": YES_NO_VALUES,
-    "community_concern_level": LOW_MED_HIGH_VALUES,
+    "community_concern_level": LOW_MED_HIGH_VALUES
 }
 
 NUMERIC_COLUMNS = [
-    "latitude", "longitude", "forecast_year", "base_year_volume_or_demand",
-    "forecast_year_volume_or_demand", "estimated_capital_cost",
-    "estimated_annual_om_cost", "funding_gap", "citizen_complaints_count",
+    "latitude",
+    "longitude",
+    "forecast_year",
+    "base_year_volume_or_demand",
+    "forecast_year_volume_or_demand",
+    "estimated_capital_cost",
+    "estimated_annual_om_cost",
+    "funding_gap",
+    "citizen_complaints_count"
 ]
 
 DEMAND_COLUMNS = [
-    "project_id", "demand_growth_level", "forecast_year",
-    "base_year_volume_or_demand", "forecast_year_volume_or_demand",
+    "project_id",
+    "demand_growth_level",
+    "forecast_year",
+    "base_year_volume_or_demand",
+    "forecast_year_volume_or_demand"
 ]
+
 
 @st.cache_data
 def create_agency_template_bytes():
-    """Create a one-sheet Excel agency data intake template."""
+    """Create a one-sheet agency data intake template with examples and definitions."""
     sample_rows = [
         {
             "project_id": "AG-001",
@@ -312,7 +343,7 @@ def create_agency_template_bytes():
             "equity_priority_area": "Yes",
             "community_concern_level": "High",
             "citizen_complaints_count": 18,
-            "cip_phase": "Design",
+            "cip_phase": "Design"
         },
         {
             "project_id": "AG-002",
@@ -351,8 +382,8 @@ def create_agency_template_bytes():
             "equity_priority_area": "No",
             "community_concern_level": "Medium",
             "citizen_complaints_count": 7,
-            "cip_phase": "Planning",
-        },
+            "cip_phase": "Planning"
+        }
     ]
 
     projects_input = pd.DataFrame(sample_rows, columns=AGENCY_REQUIRED_COLUMNS)
@@ -367,10 +398,13 @@ def create_agency_template_bytes():
         {"Field": "LOS fields", "Required": "Yes", "Accepted Values": "A / B / C / D / E / F", "Description": "Transportation level of service values."},
         {"Field": "alignment fields", "Required": "Yes", "Accepted Values": "Weak / Moderate / Strong", "Description": "Degree of alignment with adopted plans and policy frameworks."},
         {"Field": "estimated_capital_cost", "Required": "Yes", "Accepted Values": "Number", "Description": "Estimated capital cost in dollars."},
-        {"Field": "funding_gap", "Required": "Yes", "Accepted Values": "Number", "Description": "Unfunded amount in dollars."},
+        {"Field": "funding_gap", "Required": "Yes", "Accepted Values": "Number", "Description": "Unfunded amount in dollars."}
     ])
 
-    scenarios = pd.DataFrame([{"Scenario": scenario, **weights} for scenario, weights in SCENARIOS.items()])
+    scenarios = pd.DataFrame([
+        {"Scenario": scenario, **weights}
+        for scenario, weights in SCENARIOS.items()
+    ])
 
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
@@ -379,6 +413,7 @@ def create_agency_template_bytes():
         scenarios.to_excel(writer, index=False, sheet_name="Example_Scenarios")
     output.seek(0)
     return output.getvalue()
+
 
 def validate_projects_input(df):
     """Validate one-sheet Projects_Input upload and return a structured report."""
@@ -389,7 +424,7 @@ def validate_projects_input(df):
         "empty_required_fields": {},
         "numeric_issues": {},
         "readiness_score": 0,
-        "status": "Failed",
+        "status": "Failed"
     }
 
     if df is None or len(df) == 0:
@@ -397,6 +432,7 @@ def validate_projects_input(df):
         return report
 
     report["missing_columns"] = [c for c in AGENCY_REQUIRED_COLUMNS if c not in df.columns]
+
     present_required = [c for c in AGENCY_REQUIRED_COLUMNS if c in df.columns]
 
     for col in present_required:
@@ -429,7 +465,8 @@ def validate_projects_input(df):
         + len(report["numeric_issues"])
         + (1 if report["duplicate_project_ids"] else 0)
     )
-    report["readiness_score"] = max(0, round((1 - failed_checks / total_checks) * 100))
+    readiness = max(0, round((1 - failed_checks / total_checks) * 100))
+    report["readiness_score"] = readiness
 
     critical_blockers = (
         len(report["missing_columns"]) > 0
@@ -439,6 +476,7 @@ def validate_projects_input(df):
     )
     report["status"] = "Ready" if not critical_blockers else "Needs Review"
     return report
+
 
 def display_upload_validation(report, row_count):
     """Show validation results in the sidebar."""
@@ -450,7 +488,8 @@ def display_upload_validation(report, row_count):
     else:
         st.sidebar.warning(f"Upload needs review. {row_count:,} rows detected.")
 
-    st.sidebar.metric("Data Readiness", f"{report.get('readiness_score', 0)}%")
+    readiness = report.get("readiness_score", 0)
+    st.sidebar.metric("Data Readiness", f"{readiness}%")
 
     with st.sidebar.expander("View validation details"):
         if report["missing_columns"]:
@@ -475,11 +514,17 @@ def display_upload_validation(report, row_count):
             st.warning("Empty required fields")
             st.write(report["empty_required_fields"])
 
-        if not report["missing_columns"] and not report["invalid_values"] and not report["numeric_issues"] and not report["duplicate_project_ids"]:
+        if (
+            not report["missing_columns"]
+            and not report["invalid_values"]
+            and not report["numeric_issues"]
+            and not report["duplicate_project_ids"]
+        ):
             st.success("No blocking validation issues found.")
 
+
 def split_one_sheet_input(projects_input):
-    """Split one-sheet agency input into app-compatible projects and demand tables."""
+    """Split one-sheet agency input into the app's projects and demand tables."""
     df = projects_input.copy()
 
     for col in NUMERIC_COLUMNS:
@@ -493,8 +538,6 @@ def split_one_sheet_input(projects_input):
     projects = df.drop(columns=project_drop_cols, errors="ignore").copy()
 
     return projects, demand
-
-
 
 
 # =====================================================
@@ -552,6 +595,7 @@ def load_uploaded_workbook(uploaded_file):
             funding = pd.read_csv("funding_sources.csv")
 
         dictionary = pd.read_csv("data_dictionary.csv")
+
         validation_report = {
             "status": "Ready",
             "readiness_score": 100,
@@ -559,12 +603,14 @@ def load_uploaded_workbook(uploaded_file):
             "invalid_values": {},
             "duplicate_project_ids": [],
             "empty_required_fields": {},
-            "numeric_issues": {},
+            "numeric_issues": {}
         }
+
         return projects, funding, schedule, demand, dictionary, None, validation_report
 
     except Exception as e:
         return None, None, None, None, None, str(e), None
+
 
 # =====================================================
 # UTILITY SCORING HELPERS
@@ -1048,7 +1094,6 @@ st.sidebar.markdown("## UrbaniticsAI")
 st.sidebar.caption("CIP Intelligence Platform")
 st.sidebar.markdown("---")
 
-
 st.sidebar.download_button(
     label="Download Agency Template (.xlsx)",
     data=create_agency_template_bytes(),
@@ -1362,7 +1407,7 @@ else:
 
     project_row = scored[scored["project_name"] == selected_project].iloc[0]
 
-    st.markdown(f"""
+st.markdown(f"""
 <div style="
     background-color:#F1F5F9;
     padding:16px;

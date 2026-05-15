@@ -466,9 +466,26 @@ def dataframe_to_template_bytes(df):
     return output.getvalue()
 
 
+def logic_card(title, text):
+    st.markdown(
+        f"""
+        <div style="background-color:#F8FAFC;border:1px solid #D9E2EC;border-left:5px solid #274C77;border-radius:10px;padding:10px 12px;margin:6px 0 12px 0;">
+            <b style="color:#17324D;">{title}</b><br>
+            <span style="color:#334155;font-size:0.9rem;">{text}</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
 def build_guided_agency_setup(projects_reference=None):
     st.subheader("Guided Agency Setup")
     st.info("Manually enter project-level information using a step-by-step workflow. When complete, send the guided dataset directly into Portfolio Intelligence and Project Intelligence.")
+    st.markdown("""
+    <div style="background-color:#FFFFFF;border:1px solid #D9E2EC;border-radius:14px;padding:14px;margin-bottom:14px;">
+        <b>Guided workflow:</b> 1) setup agency goal → 2) enter project criteria → 3) review missing data → 4) use the dataset in dashboards.
+    </div>
+    """, unsafe_allow_html=True)
 
     if "guided_project_count" not in st.session_state:
         st.session_state["guided_project_count"] = 3
@@ -542,24 +559,24 @@ def build_guided_agency_setup(projects_reference=None):
                 c1, c2, c3 = st.columns(3)
                 with c1:
                     condition = st.selectbox("Asset condition", condition_options, index=1, key=f"g_condition_{i}")
-                    st.caption("Good = functional | Fair = deteriorating | Poor = urgent or visibly deficient")
+                    logic_card("Condition guidance", "Good = functional | Fair = deteriorating | Poor = urgent or visibly deficient")
                     safety_risk = st.selectbox("Safety risk", lmh, index=1, key=f"g_safety_{i}")
-                    st.caption("Low = minor concern | Medium = documented concern | High = severe issue, crash pattern, or exposure risk")
+                    logic_card("Safety guidance", "Low = minor concern | Medium = documented concern | High = severe issue, crash pattern, or exposure risk")
                 with c2:
                     crash_history = st.selectbox("Crash history nearby?", yes_no, key=f"g_crash_{i}")
                     near_school = st.selectbox("Near school?", yes_no, key=f"g_school_{i}")
                     near_transit = st.selectbox("Near transit?", yes_no, key=f"g_transit_{i}")
                     ada = st.selectbox("ADA/accessibility concern?", yes_no, key=f"g_ada_{i}")
-                    st.caption("Yes means the project addresses, or is affected by, an ADA/accessibility deficiency or access need.")
+                    logic_card("ADA/accessibility guidance", "Yes = the project addresses, or is affected by, an ADA/accessibility deficiency or access need")
                 with c3:
                     current_los = st.selectbox("Current LOS", los_options, index=2, key=f"g_current_los_{i}")
                     no_build_los = st.selectbox("Projected no-build LOS", los_options, index=3, key=f"g_nobuild_los_{i}")
                     after_los = st.selectbox("Expected LOS after project", los_options, index=2, key=f"g_after_los_{i}")
                     demand_growth = st.selectbox("Demand growth level", lmh, index=1, key=f"g_demand_{i}")
-                    st.caption("Use LOS only where applicable. For non-vehicular assets, use professional judgment or keep a neutral value.")
+                    logic_card("LOS/demand guidance", "Use LOS where applicable. For non-vehicular assets, use professional judgment or keep a neutral value.")
 
                 st.markdown("#### Strategic alignment")
-                st.caption("Weak = indirect support | Moderate = partial alignment | Strong = clearly supports adopted plan, policy, or program")
+                logic_card("Strategic alignment guidance", "Weak = indirect support | Moderate = partial alignment | Strong = clearly supports adopted plan, policy, or program")
                 a1, a2, a3, a4 = st.columns(4)
                 with a1:
                     mtp = st.selectbox("MTP", alignment_options, index=1, key=f"g_mtp_{i}")
@@ -582,6 +599,7 @@ def build_guided_agency_setup(projects_reference=None):
                     funding_gap = st.number_input("Funding gap", min_value=0.0, value=0.0, step=10000.0, key=f"g_gap_{i}")
                 with f3:
                     community = st.selectbox("Community concern level", lmh, index=1, key=f"g_community_{i}")
+                    logic_card("Community concern guidance", "Low = isolated concern | Medium = recurring concern | High = repeated complaints or strong public concern")
                     complaints = st.number_input("Citizen complaints count", min_value=0, value=0, step=1, key=f"g_complaints_{i}")
                 with f4:
                     cip_phase = st.selectbox("CIP phase", phase_options, key=f"g_phase_{i}")
@@ -627,14 +645,22 @@ def build_guided_agency_setup(projects_reference=None):
                 })
 
     guided_df = pd.DataFrame(rows, columns=AGENCY_REQUIRED_COLUMNS)
+    # Simple completion indicator for the guided intake workflow.
+    critical_fields = ["project_name", "asset_type", "district", "corridor_or_location", "condition", "safety_risk", "estimated_capital_cost"]
+    completed_cells = 0
+    total_cells = max(1, len(guided_df) * len(critical_fields))
+    for field in critical_fields:
+        completed_cells += int(guided_df[field].astype(str).str.strip().ne("").sum()) if field in guided_df.columns else 0
+    guided_completion = round(completed_cells / total_cells * 100)
     validation = validate_projects_input(guided_df)
 
     with setup_tabs[2]:
         st.markdown("### Missing Data Review and Smart Follow-Up Questions")
-        c1, c2, c3 = st.columns(3)
+        c1, c2, c3, c4 = st.columns(4)
         c1.metric("Guided Data Readiness", f"{validation.get('readiness_score', 0)}%")
-        c2.metric("Projects Entered", f"{len(guided_df):,}")
-        c3.metric("Non-Geocoded Projects", f"{int(((guided_df['latitude'] == 0) | (guided_df['longitude'] == 0)).sum()):,}")
+        c2.metric("Input Completion", f"{guided_completion}%")
+        c3.metric("Projects Entered", f"{len(guided_df):,}")
+        c4.metric("Non-Geocoded Projects", f"{int(((guided_df['latitude'] == 0) | (guided_df['longitude'] == 0)).sum()):,}")
         followups = []
         for _, r in guided_df.iterrows():
             name = r.get("project_name", "Untitled project")
@@ -643,7 +669,9 @@ def build_guided_agency_setup(projects_reference=None):
             if float(r.get("estimated_capital_cost", 0) or 0) == 0:
                 followups.append({"Project": name, "Suggested follow-up": "Add a planning-level capital cost estimate."})
             if r.get("safety_risk") == "High" and r.get("crash_history_nearby") == "No":
-                followups.append({"Project": name, "Suggested follow-up": "High safety risk was selected. Confirm whether crash history or exposure evidence exists."})
+                followups.append({"Project": name, "Suggested follow-up": "High safety risk was selected. Confirm whether crash history, exposure evidence, or documented safety concern exists."})
+            if r.get("safety_risk") == "High" and r.get("community_concern_level") == "Low" and r.get("crash_history_nearby") == "No":
+                followups.append({"Project": name, "Suggested follow-up": "High safety risk with low community concern and no crash history may need supporting evidence."})
             if r.get("ada_accessibility_concern") == "Yes" and r.get("ada_transition_plan_alignment") == "Weak":
                 followups.append({"Project": name, "Suggested follow-up": "ADA concern is marked Yes. Confirm ADA Transition Plan alignment."})
             if float(r.get("funding_gap", 0) or 0) == 0 and float(r.get("estimated_capital_cost", 0) or 0) > 0:
@@ -652,6 +680,11 @@ def build_guided_agency_setup(projects_reference=None):
             st.dataframe(pd.DataFrame(followups), use_container_width=True, hide_index=True)
         else:
             st.success("No major follow-up questions were generated.")
+        non_geo_guided = guided_df[(pd.to_numeric(guided_df["latitude"], errors="coerce").fillna(0) == 0) | (pd.to_numeric(guided_df["longitude"], errors="coerce").fillna(0) == 0)]
+        if len(non_geo_guided) > 0:
+            st.markdown("### Non-Geocoded Projects")
+            st.caption("These projects will remain in portfolio/project tables and filters, but will not appear as map points until coordinates are added.")
+            st.dataframe(non_geo_guided[["project_id", "project_name", "district", "corridor_or_location"]], use_container_width=True, hide_index=True)
         st.markdown("### Guided Dataset Preview")
         st.dataframe(guided_df, use_container_width=True, hide_index=True)
 
@@ -667,10 +700,14 @@ def build_guided_agency_setup(projects_reference=None):
         if st.button("Use Guided Setup Data in Dashboard", type="primary"):
             st.session_state["use_guided_dataset"] = True
             st.session_state["guided_projects_input"] = guided_df
-            st.success("Guided dataset is now connected. Select Portfolio Intelligence or Project Intelligence in the sidebar to analyze it.")
+            st.session_state["analysis_level_radio"] = "Portfolio Intelligence"
+            st.success("Guided dataset is now connected. Opening Portfolio Intelligence with the guided data.")
+            st.rerun()
         if st.button("Return to Default Demo Dataset"):
             st.session_state["use_guided_dataset"] = False
+            st.session_state["analysis_level_radio"] = "Portfolio Intelligence"
             st.success("Default demo dataset restored.")
+            st.rerun()
 
 # =====================================================
 # DATA LOADING
@@ -1234,12 +1271,14 @@ else:
 st.sidebar.header("Analysis Level")
 analysis_level = st.sidebar.radio(
     "Select analysis level",
-    ["Guided Agency Setup", "Portfolio Intelligence", "Project Intelligence"]
+    ["Guided Agency Setup", "Portfolio Intelligence", "Project Intelligence"],
+    key="analysis_level_radio"
 )
 
 if st.session_state.get("use_guided_dataset") and "guided_projects_input" in st.session_state and analysis_level != "Guided Agency Setup":
     projects, demand = split_one_sheet_input(st.session_state["guided_projects_input"])
     st.sidebar.success("Using guided setup dataset.")
+    st.success("Guided setup dataset is active. Portfolio and Project Intelligence now use the manually entered agency data.")
 
 if analysis_level == "Guided Agency Setup":
     build_guided_agency_setup(projects)
@@ -1403,6 +1442,15 @@ if analysis_level == "Portfolio Intelligence":
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.warning("No valid latitude/longitude values are available. Projects remain available in the tables using corridor/location information.")
+        non_geo = map_df[(map_df["latitude"] == 0) | (map_df["longitude"] == 0)]
+        if len(non_geo) > 0:
+            st.markdown("### Non-Geocoded Projects")
+            st.caption("These projects have corridor/location information but do not currently have valid map coordinates.")
+            st.dataframe(
+                non_geo[["rank", "project_id", "project_name", "district", "corridor_or_location", "priority_score", "priority_level"]],
+                use_container_width=True,
+                hide_index=True
+            )
         st.markdown("---")
         st.subheader("Mapped Project List")
         st.dataframe(
